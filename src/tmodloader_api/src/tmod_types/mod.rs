@@ -276,12 +276,6 @@ impl Into<CSType> for Projectile {
     }
 }
 
-impl ToString for Projectile {
-    fn to_string(&self) -> String {
-        todo!()
-    }
-}
-
 #[derive(serde::Serialize, serde::Deserialize, Clone)]
 pub struct Tile {
     //TODO
