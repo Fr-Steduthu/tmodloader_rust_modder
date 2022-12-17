@@ -23,6 +23,8 @@ pub enum NamespaceContents {
     Recipe(Recipe),
 }
 
+pub type Time = u32;
+
 #[derive(serde::Serialize, serde::Deserialize)]
 pub struct Identifier {
     pub id : String,
@@ -53,6 +55,19 @@ impl Into<CSType> for Identifier {
     }
 }
 
+#[derive(serde::Serialize, serde::Deserialize)]
+pub enum EntitySound {
+    Terraria(u16),
+    Custom(String),
+}
+
+#[derive(serde::Serialize, serde::Deserialize)]
+pub enum ItemSound {
+    Terraria(u16),
+    Custom(String),
+}
+
+#[derive(serde::Serialize, serde::Deserialize)]
 pub enum UseStyle {
     Swing,
     Eat,
@@ -73,22 +88,22 @@ impl Into<u16> for UseStyle {
     }
 }
 
-pub enum UseSound {
-    Terraria(u16),
-    Custom(Identifier)
-}
-impl Into<CSType> for u16 {
-    fn into(self) -> CSType {
-        CSPrimalType::Integer.into()
-    }
-}
-
 #[derive(serde::Serialize, serde::Deserialize)]
 pub struct Value {
     platinum : u16,
     gold : u16,
     silver : u16,
     copper : u16
+}
+
+impl Into<u64> for Value {
+    fn into(self) -> u64 {
+        self.copper as u64 +
+            self.silver as u64 * 100 +
+            self.gold as u64 * 10000 +
+            self.platinum as u64 * 1000000
+        as u64
+    }
 }
 
 impl Into<CSType> for Value {
@@ -99,9 +114,69 @@ impl Into<CSType> for Value {
 
 #[derive(serde::Serialize, serde::Deserialize)]
 pub enum Rarity {
-    Dull,
-    Legendary,
-    //TODO
+    Gray,
+    White,
+    Blue,
+    Green,
+    Orange,
+    LightRed,
+    Pink,
+    LightPurple,
+    Lime,
+    Yellow,
+    Cyan,
+    Red,
+    Purple,
+    Rainbow,
+    FieryRed,
+    Quest,
+}
+
+impl Into<i8> for Rarity {
+    fn into(self) -> i8 {
+        match self {
+            Rarity::Gray => { -1 }
+            Rarity::White => { 0 }
+            Rarity::Blue => { 1 }
+            Rarity::Green => { 2 }
+            Rarity::Orange => { 3 }
+            Rarity::LightRed => { 4 }
+            Rarity::Pink => { 5 }
+            Rarity::LightPurple => { 6 }
+            Rarity::Lime => { 7 }
+            Rarity::Yellow => { 8 }
+            Rarity::Cyan => { 9 }
+            Rarity::Red => { 10 }
+            Rarity::Purple => { 11 }
+            Rarity::Rainbow => { -12 }
+            Rarity::FieryRed => { -13 }
+            Rarity::Quest => { -11 }
+        }
+    }
+}
+
+impl From<i8> for Rarity {
+    fn from(value: i8) -> Self {
+        match value {
+            -1 => { Rarity::Gray }
+            0 => { Rarity::White }
+            1 => { Rarity::Blue }
+            2 => { Rarity::Green }
+            3 => { Rarity::Orange }
+            4 => { Rarity::LightRed }
+            5 => { Rarity::Pink }
+            6 => { Rarity::LightPurple }
+            7 => { Rarity::Lime }
+            8 => { Rarity::Yellow }
+            9 => { Rarity::Cyan }
+            10 => { Rarity::Red }
+            11 => { Rarity::Purple }
+            -12 => { Rarity::Rainbow }
+            -13 => { Rarity::FieryRed }
+            -11 => { Rarity::Quest }
+            _ => { Rarity::Gray }
+        }
+    }
 }
 
 impl Into<CSType> for Rarity {
@@ -135,9 +210,10 @@ pub struct Item {
     height : u16,
 
     //Animation
-    use_time : crate::terraria_defaults::time::Time,
-    use_animation : crate::terraria_defaults::time::Time,
-
+    use_time : self::Time,
+    use_animation : self::Time,
+    use_style : self::UseStyle,
+    use_sound : self::ItemSound,
 
     auto_reuse : bool,
     consumable : bool, // Loses 1 stack per use
@@ -152,7 +228,7 @@ pub struct Item {
     knockback : u16,
 
     shoot : ProjectileId,
-    shoot_speed : crate::terraria_defaults::time::Time,
+    shoot_speed : self::Time,
 
     heal_life: u16,
 }
