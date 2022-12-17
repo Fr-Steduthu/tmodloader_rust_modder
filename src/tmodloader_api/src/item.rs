@@ -20,7 +20,7 @@ impl Item {
             use_time: 0,
             use_animation: 0,
             use_style: UseStyle::Swing,
-            use_sound: crate::terraria_defaults::sound_ids::items::Melee,
+            use_sound: crate::terraria_defaults::sound_ids::items::MELEE,
             auto_reuse: false,
             consumable: false,
             no_use_graphics: false,
