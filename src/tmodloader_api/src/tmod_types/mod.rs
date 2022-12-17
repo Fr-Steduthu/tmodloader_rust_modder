@@ -1,5 +1,6 @@
 use crate::cs_types::{CSPrimalType, CSType};
 use crate::terraria_defaults::time::TICK;
+use crate::tmod_types::DamageType::Melee;
 
 #[derive(serde::Serialize, serde::Deserialize)]
 pub struct Mod {
@@ -233,42 +234,6 @@ pub struct Item {
     use_ammo: Option<ItemId>,
 
     heal_life: u16,
-}
-
-impl Item {
-    fn new(name : String, tooltip : String) -> Self {
-        Item{
-            id: Identifier { id: name.clone(), is_vanilla: false },
-            name: name,
-            tooltip: tooltip,
-            value: Value {
-                platinum: 0,
-                gold: 0,
-                silver: 0,
-                copper: 0,
-            },
-            rarity: 0.into(),
-            max_stack: 1,
-            width: 0,
-            height: 0,
-            use_time: 20 * TICK,
-            use_animation: 20 * TICK,
-            use_style: UseStyle::Swing,
-            use_sound: crate::terraria_defaults::sound_ids::items::Melee,
-            auto_reuse: false,
-            consumable: false,
-            no_use_graphics: false,
-            use_turn: true,
-            no_melee: false,
-            damage: 1,
-            damage_type: DamageType::Melee,
-            knockback: 0,
-            shoot: None,
-            shoot_speed: 0,
-            use_ammo: None,
-            heal_life: 0,
-        }
-    }
 }
 
 impl Into<CSType> for Item {
