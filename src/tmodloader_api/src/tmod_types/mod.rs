@@ -1,21 +1,19 @@
 use crate::cs_types::{CSPrimalType, CSType};
-use crate::terraria_defaults::time::TICK;
-use crate::tmod_types::DamageType::Melee;
 
-#[derive(serde::Serialize, serde::Deserialize)]
+#[derive(serde::Serialize, serde::Deserialize, Clone)]
 pub struct Mod {
     name : String,
     id : [char; 3],
     namespaces : Vec<Namespace>
 }
 
-#[derive(serde::Serialize, serde::Deserialize)]
+#[derive(serde::Serialize, serde::Deserialize, Clone,)]
 pub struct Namespace {
     name : String,
     contents : Vec<NamespaceContents>,
 }
 
-#[derive(serde::Serialize, serde::Deserialize)]
+#[derive(serde::Serialize, serde::Deserialize, Clone)]
 pub enum NamespaceContents {
     Item(Item),
     Projectile(Projectile),
@@ -27,7 +25,7 @@ pub enum NamespaceContents {
 
 pub type Time = u32;
 
-#[derive(serde::Serialize, serde::Deserialize)]
+#[derive(serde::Serialize, serde::Deserialize, Clone)]
 pub struct Identifier {
     pub id : String,
     pub is_vanilla : bool,
@@ -57,19 +55,19 @@ impl Into<CSType> for Identifier {
     }
 }
 
-#[derive(serde::Serialize, serde::Deserialize)]
+#[derive(serde::Serialize, serde::Deserialize, Clone)]
 pub enum EntitySound {
     Terraria(u16),
     Custom(String),
 }
 
-#[derive(serde::Serialize, serde::Deserialize)]
+#[derive(serde::Serialize, serde::Deserialize, Clone)]
 pub enum ItemSound {
     Terraria(u16),
     Custom(String),
 }
 
-#[derive(serde::Serialize, serde::Deserialize)]
+#[derive(serde::Serialize, serde::Deserialize, Clone)]
 pub enum UseStyle {
     Swing,
     Eat,
@@ -90,7 +88,7 @@ impl Into<u16> for UseStyle {
     }
 }
 
-#[derive(serde::Serialize, serde::Deserialize)]
+#[derive(serde::Serialize, serde::Deserialize, Clone)]
 pub struct Value {
     pub platinum : u16,
     pub gold : u16,
@@ -114,7 +112,7 @@ impl Into<CSType> for Value {
     }
 }
 
-#[derive(serde::Serialize, serde::Deserialize)]
+#[derive(serde::Serialize, serde::Deserialize, Clone)]
 pub enum Rarity {
     Gray,
     White,
@@ -187,7 +185,7 @@ impl Into<CSType> for Rarity {
     }
 }
 
-#[derive(serde::Serialize, serde::Deserialize)]
+#[derive(serde::Serialize, serde::Deserialize, Clone)]
 pub enum DamageType {
     Melee,
     Ranged,
@@ -196,7 +194,7 @@ pub enum DamageType {
     Thrown,
 }
 
-#[derive(serde::Serialize, serde::Deserialize)]
+#[derive(serde::Serialize, serde::Deserialize, Clone)]
 pub struct Item {
     pub id : ItemId,
 
@@ -242,14 +240,14 @@ impl Into<CSType> for Item {
     }
 }
 
-#[derive(serde::Serialize, serde::Deserialize)]
+#[derive(serde::Serialize, serde::Deserialize, Clone)]
 pub struct Recipe {
     result : ItemId,
     ingredients : Vec<ItemId>,
     stations : Vec<TileId>,
 }
 
-#[derive(serde::Serialize, serde::Deserialize)]
+#[derive(serde::Serialize, serde::Deserialize, Clone)]
 pub struct Projectile {
     //TODO
 }
@@ -260,7 +258,7 @@ impl Into<CSType> for Projectile {
     }
 }
 
-#[derive(serde::Serialize, serde::Deserialize)]
+#[derive(serde::Serialize, serde::Deserialize, Clone)]
 pub struct Tile {
     //TODO
 }
@@ -271,7 +269,7 @@ impl Into<CSType> for Tile {
     }
 }
 
-#[derive(serde::Serialize, serde::Deserialize)]
+#[derive(serde::Serialize, serde::Deserialize, Clone)]
 pub struct Buff {
     //TODO
 }
@@ -282,7 +280,7 @@ impl Into<CSType> for Buff {
     }
 }
 
-#[derive(serde::Serialize, serde::Deserialize)]
+#[derive(serde::Serialize, serde::Deserialize, Clone)]
 pub struct Entity {
     //TODO
 }

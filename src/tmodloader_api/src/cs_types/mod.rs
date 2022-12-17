@@ -1,4 +1,4 @@
-#[derive(serde::Serialize, serde::Deserialize)]
+#[derive(serde::Serialize, serde::Deserialize, Clone)]
 pub struct CSType {
     prefix : CSTypePrefix,
     t : CSPrimalType,
@@ -25,7 +25,7 @@ impl ToString for CSType {
     }
 }
 
-#[derive(serde::Serialize, serde::Deserialize)]
+#[derive(serde::Serialize, serde::Deserialize, Clone)]
 enum CSTypePrefix{ None, Ref, Out, Params}
 
 impl ToString for CSTypePrefix {
@@ -39,7 +39,7 @@ impl ToString for CSTypePrefix {
     }
 }
 
-#[derive(serde::Serialize, serde::Deserialize)]
+#[derive(serde::Serialize, serde::Deserialize, Clone)]
 pub enum CSPrimalType {
     String,
     Integer,
@@ -60,7 +60,7 @@ impl ToString for CSPrimalType {
     }
 }
 
-#[derive(serde::Serialize, serde::Deserialize)]
+#[derive(serde::Serialize, serde::Deserialize, Clone)]
 pub struct CSObject {
     classname : String,
     namespace : String,
@@ -76,7 +76,7 @@ impl ToString for CSObject {
     }
 }
 
-#[derive(serde::Serialize, serde::Deserialize)]
+#[derive(serde::Serialize, serde::Deserialize, Clone)]
 pub struct CSFunction {
     name : String,
     access : AccessModifier,
@@ -112,7 +112,7 @@ impl ToString for CSFunction {
     }
 }
 
-#[derive(serde::Serialize, serde::Deserialize)]
+#[derive(serde::Serialize, serde::Deserialize, Clone)]
 pub enum AccessModifier {
     Private,
     Protected,
