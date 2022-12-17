@@ -240,6 +240,12 @@ impl Into<CSType> for Item {
     }
 }
 
+impl ToString for Item {
+    fn to_string(&self) -> String {
+        todo!()
+    }
+}
+
 #[derive(serde::Serialize, serde::Deserialize, Clone)]
 pub struct Recipe {
     result : ItemId,
@@ -247,9 +253,21 @@ pub struct Recipe {
     stations : Vec<TileId>,
 }
 
+impl ToString for Recipe {
+    fn to_string(&self) -> String {
+        todo!()
+    }
+}
+
 #[derive(serde::Serialize, serde::Deserialize, Clone)]
 pub struct Projectile {
     //TODO
+}
+
+impl ToString for Projectile {
+    fn to_string(&self) -> String {
+        todo!()
+    }
 }
 
 impl Into<CSType> for Projectile {
@@ -258,9 +276,21 @@ impl Into<CSType> for Projectile {
     }
 }
 
+impl ToString for Projectile {
+    fn to_string(&self) -> String {
+        todo!()
+    }
+}
+
 #[derive(serde::Serialize, serde::Deserialize, Clone)]
 pub struct Tile {
     //TODO
+}
+
+impl ToString for Tile {
+    fn to_string(&self) -> String {
+        todo!()
+    }
 }
 
 impl Into<CSType> for Tile {
@@ -274,6 +304,12 @@ pub struct Buff {
     //TODO
 }
 
+impl ToString for Buff {
+    fn to_string(&self) -> String {
+        todo!()
+    }
+}
+
 impl Into<CSType> for Buff {
     fn into(self) -> CSType {
         CSPrimalType::Custom("Buff".to_string()).into()
@@ -284,6 +320,13 @@ impl Into<CSType> for Buff {
 pub struct Entity {
     //TODO
 }
+
+impl ToString for Entity {
+    fn to_string(&self) -> String {
+        todo!()
+    }
+}
+
 impl Into<CSType> for Entity {
     fn into(self) -> CSType {
         CSPrimalType::Custom("Entity".to_string()).into()
