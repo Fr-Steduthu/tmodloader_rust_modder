@@ -1,8 +1,8 @@
 #[derive(serde::Serialize, serde::Deserialize, Clone)]
 pub struct CSType {
-    prefix : CSTypePrefix,
-    t : CSPrimalType,
-    is_array: bool,
+    pub prefix : CSTypePrefix,
+    pub t : CSPrimalType,
+    pub is_array: bool,
 }
 
 impl From<CSPrimalType> for CSType {
@@ -26,7 +26,7 @@ impl ToString for CSType {
 }
 
 #[derive(serde::Serialize, serde::Deserialize, Clone)]
-enum CSTypePrefix{ None, Ref, Out, Params}
+pub enum CSTypePrefix{ None, Ref, Out, Params}
 
 impl ToString for CSTypePrefix {
     fn to_string(&self) -> String {
@@ -62,12 +62,14 @@ impl ToString for CSPrimalType {
 
 #[derive(serde::Serialize, serde::Deserialize, Clone)]
 pub struct CSObject {
-    classname : String,
-    namespace : String,
-    accessibility : AccessModifier,
+    pub classname : String,
+    pub namespace : String,
+    pub accessibility : AccessModifier,
 
-    fields : Vec<(String, CSType)>,
-    functions : Vec<CSFunction>,
+    pub inherits : Vec<String>,
+
+    pub fields : Vec<(String, CSType)>,
+    pub functions : Vec<CSFunction>,
 }
 
 impl ToString for CSObject {
@@ -78,16 +80,16 @@ impl ToString for CSObject {
 
 #[derive(serde::Serialize, serde::Deserialize, Clone)]
 pub struct CSFunction {
-    name : String,
-    access : AccessModifier,
-    arguments : Vec<(String, CSType)>,
+    pub name : String,
+    pub access : AccessModifier,
+    pub arguments : Vec<(String, CSType)>,
 
-    body : String,
+    pub body : String,
 
-    return_value : CSType,
+    pub return_value : CSType,
 
-    is_override : bool,
-    scoped_variables : Vec<(String, CSType)>
+    pub is_override : bool,
+    pub scoped_variables : Vec<(String, CSType)>
 }
 
 impl ToString for CSFunction {
