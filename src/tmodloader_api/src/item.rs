@@ -27,7 +27,7 @@ impl Item {
             use_turn: false,
             no_melee: false,
             damage: 1,
-            damage_type: DamageType::Melee,
+            damage_type: Some(DamageType::Melee),
             knockback: 0,
             shoot: None,
             shoot_speed: 0,
@@ -60,7 +60,7 @@ impl Item {
         let mut item = Self::usable(name, tooltip);
 
         item.damage = damage;
-        item.damage_type = damage_type;
+        item.damage_type = Some(damage_type);
 
         return item;
     }

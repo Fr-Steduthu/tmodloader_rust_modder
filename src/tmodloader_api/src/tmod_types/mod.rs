@@ -1,4 +1,4 @@
-use crate::cs_types::{CSPrimalType, CSType};
+use crate::cs_types::{AccessModifier, CSFunction, CSObject, CSPrimalType, CSType};
 
 #[derive(serde::Serialize, serde::Deserialize, Clone)]
 pub struct Mod {
@@ -194,6 +194,18 @@ pub enum DamageType {
     Thrown,
 }
 
+impl ToString for DamageType {
+    fn to_string(&self) -> String {
+        match self {
+            DamageType::Melee => { "melee".to_string() }
+            DamageType::Ranged => { "ranged".to_string() }
+            DamageType::Magic => { "magic".to_string() }
+            DamageType::Summon => { "summon".to_string() }
+            DamageType::Thrown => { "thorwn".to_string() }
+        }
+    }
+}
+
 #[derive(serde::Serialize, serde::Deserialize, Clone)]
 pub struct Item {
     pub id : ItemId,
@@ -224,7 +236,7 @@ pub struct Item {
     pub no_melee : bool, // Whether or not the sprite should be used when using
 
     pub damage : i64,
-    pub damage_type : DamageType,
+    pub damage_type : Option<DamageType>,
     pub knockback : u16,
 
     pub shoot : Option<ProjectileId>,
@@ -240,9 +252,39 @@ impl Into<CSType> for Item {
     }
 }
 
-impl ToString for Item {
-    fn to_string(&self) -> String {
-        todo!()
+impl Into<CSObject> for Item {
+    fn into(self) -> CSObject {
+        CSObject{
+            classname: "".to_string(),
+            namespace: "ModItem".to_string(),
+            accessibility: AccessModifier::Public,
+            inherits : vec!["ModItem".to_string()],
+            fields: vec![],
+            functions: vec![
+                CSFunction {
+                    name: "setDefaults".to_string(),
+                    access: AccessModifier::Private,
+                    arguments: vec![],
+                    body: {
+                        [
+                            "\t\titem.name = ", self.name.as_str(), ";\n",
+                            "\t\titem.tooltip = \"", self.tooltip.as_str(), "\";\n",
+                            if <Value as Into<u64>>::into(self.value.clone()) != 0u64 { ["\t\titem.value = ", <Value as Into<u64>>::into(self.value.clone()).to_string().as_str(), ";\n"].join("") } else { "".to_string() }.as_str(),
+                            if let Some(t) = self.damage_type { ["\t\titem.", t.to_string().as_str(), " = true;\n\t\titem.damage = ", self.damage.to_string().as_str(), "\n"].join("") } else { "".to_string() }.as_str(),
+                            if self.use_turn { "\t\tthis.useTurn = true;\n" } else { "" },
+                            if self.auto_reuse { "\t\tthis.autoReuse = true;\n"} else { "" },
+                        ].join("")
+                    },
+                    return_value: CSType {
+                        prefix: crate::cs_types::CSTypePrefix::None,
+                        t: CSPrimalType::Void,
+                        is_array: false,
+                    },
+                    is_override: true,
+                    scoped_variables: vec![],
+                }
+            ],
+        }
     }
 }
 
