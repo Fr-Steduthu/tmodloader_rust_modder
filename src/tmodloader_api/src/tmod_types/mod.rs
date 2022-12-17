@@ -92,10 +92,10 @@ impl Into<u16> for UseStyle {
 
 #[derive(serde::Serialize, serde::Deserialize)]
 pub struct Value {
-    platinum : u16,
-    gold : u16,
-    silver : u16,
-    copper : u16
+    pub platinum : u16,
+    pub gold : u16,
+    pub silver : u16,
+    pub copper : u16
 }
 
 impl Into<u64> for Value {
@@ -198,42 +198,42 @@ pub enum DamageType {
 
 #[derive(serde::Serialize, serde::Deserialize)]
 pub struct Item {
-    id : ItemId,
+    pub id : ItemId,
 
-    name : String,
-    tooltip : String,
-    value : Value,
-    rarity : Rarity,
+    pub name : String,
+    pub tooltip : String,
+    pub value : Value,
+    pub rarity : Rarity,
 
-    max_stack: u64,
+    pub max_stack: u64,
 
     //Sprite
-    width : u16,
-    height : u16,
+    pub width : u16,
+    pub height : u16,
 
     //Animation
-    use_time : self::Time,
-    use_animation : self::Time,
-    use_style : self::UseStyle,
-    use_sound : self::ItemSound,
+    pub use_time : self::Time,
+    pub use_animation : self::Time,
+    pub use_style : self::UseStyle,
+    pub use_sound : self::ItemSound,
 
-    auto_reuse : bool,
-    consumable : bool, // Loses 1 stack per use
+    pub auto_reuse : bool,
+    pub consumable : bool, // Loses 1 stack per use
 
-    no_use_graphics : bool, // ??
+    pub no_use_graphics : bool, // ??
 
-    use_turn : bool, // Sprite rotation when used
-    no_melee : bool, // Whether or not the sprite should be used when using
+    pub use_turn : bool, // Sprite rotation when used
+    pub no_melee : bool, // Whether or not the sprite should be used when using
 
-    damage : i64,
-    damage_type : DamageType,
-    knockback : u16,
+    pub damage : i64,
+    pub damage_type : DamageType,
+    pub knockback : u16,
 
-    shoot : Option<ProjectileId>,
-    shoot_speed : self::Time,
-    use_ammo: Option<ItemId>,
+    pub shoot : Option<ProjectileId>,
+    pub shoot_speed : self::Time,
+    pub use_ammo: Option<ItemId>,
 
-    heal_life: u16,
+    pub heal_life: u16,
 }
 
 impl Into<CSType> for Item {

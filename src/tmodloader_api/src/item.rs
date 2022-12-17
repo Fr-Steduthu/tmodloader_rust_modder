@@ -1,7 +1,8 @@
-use std::io::SeekFrom;
+use crate::tmod_types::{Identifier, Item, Value, UseStyle, DamageType};
+use crate::terraria_defaults::time::TICK;
 
 impl Item {
-    fn new(name : String, tooltip : String) -> Self {
+    pub fn new(name : String, tooltip : String) -> Self {
         Item{
             id: Identifier { id: name.clone(), is_vanilla: false },
             name: name,
@@ -35,7 +36,7 @@ impl Item {
         }
     }
 
-    fn usable(name : String, tooltip : String) -> Self {
+    pub fn usable(name : String, tooltip : String) -> Self {
         let mut item = Self::new(name, tooltip);
 
         item.use_time = 20 * TICK;
@@ -47,7 +48,7 @@ impl Item {
         return item;
     }
 
-    fn consumable(name : String, tooltip : String) -> Self {
+    pub fn consumable(name : String, tooltip : String) -> Self {
         let mut item = Self::usable(name, tooltip);
 
         item.consumable = true;
@@ -55,7 +56,7 @@ impl Item {
         return item;
     }
 
-    fn weapon(name : String, tooltip : String, damage : i64, damage_type : DamageType) -> Self {
+    pub fn weapon(name : String, tooltip : String, damage : i64, damage_type : DamageType) -> Self {
         let mut item = Self::usable(name, tooltip);
 
         item.damage = damage;
@@ -66,8 +67,8 @@ impl Item {
 }
 
 impl Item {
-    fn sword(name: String, tooltip : String, damage : i64) -> Self {
-        let mut item = Self::weapon(name, tolltip, damage, Melee);
+    pub fn sword(name: String, tooltip : String, damage : i64) -> Self {
+        let mut item = Self::weapon(name, tooltip, damage, DamageType::Melee);
 
         item.use_turn = true;
 
