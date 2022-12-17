@@ -6,4 +6,5 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-tmodloader_api = { path = "../src/tmodloader_api"}
+serde_json = "1.0.89"
+tmodloader_api = { path = "../src/tmodloader_api" }
