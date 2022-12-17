@@ -57,7 +57,7 @@ pub struct Value {
     copper : u16
 }
 
-impl Into<CSType> for Rarity {
+impl Into<CSType> for Value {
     fn into(self) -> CSType {
         CSType::Integer
     }
