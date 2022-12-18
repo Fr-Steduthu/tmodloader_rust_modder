@@ -4,7 +4,7 @@ use crate::terraria_defaults::time::TICK;
 impl Item {
     pub fn new(name : String, tooltip : String) -> Self {
         Item{
-            id: Identifier { id: name.clone(), is_vanilla: false },
+            id: Identifier::Modded(name.clone()),
             name: name,
             tooltip: tooltip,
             value: Value {
