@@ -1,7 +1,7 @@
 #![allow(non_snake_case)]
 
 use tmodloader_api::{
-    cs_types::CSObject,
+    csharp_repr::types::CSClass,
     tmod_types::{
         Item,
     }
@@ -19,7 +19,7 @@ fn main() {
 
     let item = Item::new("tyuhvb".to_string(), "tyughuj".to_string());
     println!("{}", serde_json::to_string(&item.clone()).unwrap());
-    println!("{}", <Item as Into<CSObject>>::into(item).to_string());
+    println!("{}", <Item as Into<CSClass>>::into(item).to_string());
 }
 
 
@@ -27,5 +27,5 @@ fn main() {
 #[test]
 fn test_item_to_csobj(){
     startup!(item);
-    println!("{:?}", <Item as Into<CSObject>>::into(item));
+    println!("{:?}", <Item as Into<CSClass>>::into(item));
 }

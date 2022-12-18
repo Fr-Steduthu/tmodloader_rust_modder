@@ -1,3 +1,6 @@
+use std::borrow::ToOwned;
+use lazy_static::lazy_static;
+use csharp_repr::types::CSClass;
 
 pub mod time {
     use crate::tmod_types::Time;
@@ -135,5 +138,16 @@ pub mod tile_ids {
     use crate::tmod_types::TileId;
 
     pub const DIRT_TILE : TileId = Terraria(1);
+}
+
+lazy_static! {
+    pub static ref MODITEM : CSClass = CSClass {
+        classname: "ModItem".to_owned(),
+        namespace: "".to_owned(),
+        accessibility: csharp_repr::types::AccessModifier::Public,
+        parents: vec![],
+        fields: vec![],
+        functions: vec![],
+    };
 }
 

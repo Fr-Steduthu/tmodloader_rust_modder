@@ -7,4 +7,4 @@ edition = "2021"
 
 [dependencies]
 serde = { version = "1.0.151", features = ["derive"] }
-tmodloader_api = { path = "./src/tmodloader_api"}
+tmodloader_api = { path = "tmodloader_api" }

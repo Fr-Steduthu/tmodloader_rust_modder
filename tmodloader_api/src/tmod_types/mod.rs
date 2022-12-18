@@ -1,4 +1,6 @@
-use crate::cs_types::{AccessModifier, CSFunction, CSObject, CSPrimalType, CSType};
+use csharp_repr::types::{AccessModifier, CSFunction, CSClass, CSType};
+
+pub type Time = u32;
 
 #[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
 pub struct Mod {
@@ -23,8 +25,6 @@ pub enum NamespaceContents {
     Recipe(Recipe),
 }
 
-pub type Time = u32;
-
 #[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
 pub enum Identifier {
     Terraria(u32),
@@ -44,24 +44,24 @@ pub type ItemId = Identifier;
 pub type ProjectileId = Identifier;
 pub type TileId = Identifier;
 pub type BuffId = Identifier;
-pub type
+pub type EntityId = Identifier;
 
 impl Into<CSType> for Identifier {
     fn into(self) -> CSType {
-        CSPrimalType::Integer.into()
+        todo!()
     }
 }
 
 #[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
 pub enum EntitySound {
     Terraria(u16),
-    Custom(String),
+    Modded(String),
 }
 
 #[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
 pub enum ItemSound {
     Terraria(u16),
-    Custom(String),
+    Modded(String),
 }
 
 #[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
@@ -105,7 +105,7 @@ impl Into<u64> for Value {
 
 impl Into<CSType> for Value {
     fn into(self) -> CSType {
-        CSPrimalType::Integer.into()
+        todo!()
     }
 }
 
@@ -178,7 +178,7 @@ impl From<i8> for Rarity {
 
 impl Into<CSType> for Rarity {
     fn into(self) -> CSType {
-        CSPrimalType::Integer.into()
+        CSType::integer()
     }
 }
 
@@ -245,41 +245,29 @@ pub struct Item {
 
 impl Into<CSType> for Item {
     fn into(self) -> CSType {
-        CSPrimalType::Custom("Item".to_string()).into()
+        CSType::class("ModItem".to_string())
     }
 }
 
-impl Into<CSObject> for Item {
-    fn into(self) -> CSObject {
-        CSObject{
+impl Into<CSClass> for Item {
+    fn into(self) -> CSClass {
+        CSClass {
             classname: self.name.clone(),
             namespace: "ModItem".to_string(),
             accessibility: AccessModifier::Public,
-            inherits : vec!["ModItem".to_string()],
+            parents: vec!["ModItem".to_string()],
             fields: vec![],
             functions: vec![
-                CSFunction {
-                    name: "setDefaults".to_string(),
-                    access: AccessModifier::Private,
-                    arguments: vec![],
-                    body: {
-                        [
-                            "\t\titem.name = ", self.name.as_str(), ";\n",
-                            "\t\titem.tooltip = \"", self.tooltip.as_str(), "\";\n",
-                            if <Value as Into<u64>>::into(self.value.clone()) != 0u64 { ["\t\titem.value = ", <Value as Into<u64>>::into(self.value.clone()).to_string().as_str(), ";\n"].join("") } else { "".to_string() }.as_str(),
-                            if let Some(t) = self.damage_type { ["\t\titem.", t.to_string().as_str(), " = true;\n\t\titem.damage = ", self.damage.to_string().as_str(), "\n"].join("") } else { "".to_string() }.as_str(),
-                            if self.use_turn { "\t\tthis.useTurn = true;\n" } else { "" },
-                            if self.auto_reuse { "\t\tthis.autoReuse = true;\n"} else { "" },
-                        ].join("")
-                    },
-                    return_value: CSType {
-                        prefix: crate::cs_types::CSTypePrefix::None,
-                        t: CSPrimalType::Void,
-                        is_array: false,
-                    },
-                    is_override: true,
-                    scoped_variables: vec![],
-                }
+                CSFunction::new("setDefaults".to_string(), vec![], CSType::void(),
+                    vec![
+                        "\t\titem.name = ".to_string(), self.name, ";\n".to_string(),
+                        "\t\titem.tooltip = \"".to_string(), self.tooltip, "\";\n".to_string(),
+                        if <Value as Into<u64>>::into(self.value.clone()) != 0u64 { ["\t\titem.value = ", <Value as Into<u64>>::into(self.value.clone()).to_string().as_str(), ";\n"].join("") } else { "".to_string() },
+                        if let Some(t) = self.damage_type { ["\t\titem.", t.to_string().as_str(), " = true;\n\t\titem.damage = ", self.damage.to_string().as_str(), "\n"].join("") } else { "".to_string() },
+                        if self.use_turn { "\t\tthis.useTurn = true;\n" } else { "" }.to_string(),
+                        if self.auto_reuse { "\t\tthis.autoReuse = true;\n"} else { "" }.to_string(),
+                    ]
+                )
             ],
         }
     }
@@ -312,7 +300,7 @@ impl ToString for Projectile {
 
 impl Into<CSType> for Projectile {
     fn into(self) -> CSType {
-        CSPrimalType::Custom("Projectile".to_string()).into()
+        CSType::class("Projectile".to_string()).into()
     }
 }
 
@@ -330,7 +318,7 @@ impl ToString for Tile {
 
 impl Into<CSType> for Tile {
     fn into(self) -> CSType {
-        CSPrimalType::Custom("Tile".to_string()).into()
+        CSType::class("Tile".to_string()).into()
     }
 }
 
@@ -348,7 +336,7 @@ impl ToString for Buff {
 
 impl Into<CSType> for Buff {
     fn into(self) -> CSType {
-        CSPrimalType::Custom("Buff".to_string()).into()
+        CSType::class("Buff".to_string())
     }
 }
 
@@ -366,6 +354,6 @@ impl ToString for Entity {
 
 impl Into<CSType> for Entity {
     fn into(self) -> CSType {
-        CSPrimalType::Custom("Entity".to_string()).into()
+        CSType::class("Entity".to_string())
     }
 }
