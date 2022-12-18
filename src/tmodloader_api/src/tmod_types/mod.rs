@@ -1,19 +1,19 @@
 use crate::cs_types::{AccessModifier, CSFunction, CSObject, CSPrimalType, CSType};
 
-#[derive(serde::Serialize, serde::Deserialize, Clone)]
+#[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
 pub struct Mod {
     name : String,
     id : [char; 3],
     namespaces : Vec<Namespace>
 }
 
-#[derive(serde::Serialize, serde::Deserialize, Clone,)]
+#[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
 pub struct Namespace {
     name : String,
     contents : Vec<NamespaceContents>,
 }
 
-#[derive(serde::Serialize, serde::Deserialize, Clone)]
+#[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
 pub enum NamespaceContents {
     Item(Item),
     Projectile(Projectile),
@@ -25,22 +25,17 @@ pub enum NamespaceContents {
 
 pub type Time = u32;
 
-#[derive(serde::Serialize, serde::Deserialize, Clone)]
-pub struct Identifier {
-    pub id : String,
-    pub is_vanilla : bool,
+#[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
+pub enum Identifier {
+    Terraria(u32),
+    Modded(String),
 }
 
 impl ToString for Identifier {
     fn to_string(&self) -> String {
-        if self.is_vanilla {
-            return {
-                todo!()
-            }
-        }
-
-        return {
-            todo!()
+        match self {
+            Identifier::Terraria(id) => { id.to_string() }
+            Identifier::Modded(id) => { id.clone() }
         }
     }
 }
@@ -55,19 +50,19 @@ impl Into<CSType> for Identifier {
     }
 }
 
-#[derive(serde::Serialize, serde::Deserialize, Clone)]
+#[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
 pub enum EntitySound {
     Terraria(u16),
     Custom(String),
 }
 
-#[derive(serde::Serialize, serde::Deserialize, Clone)]
+#[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
 pub enum ItemSound {
     Terraria(u16),
     Custom(String),
 }
 
-#[derive(serde::Serialize, serde::Deserialize, Clone)]
+#[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
 pub enum UseStyle {
     Swing,
     Eat,
@@ -88,7 +83,7 @@ impl Into<u16> for UseStyle {
     }
 }
 
-#[derive(serde::Serialize, serde::Deserialize, Clone)]
+#[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
 pub struct Value {
     pub platinum : u16,
     pub gold : u16,
@@ -112,7 +107,7 @@ impl Into<CSType> for Value {
     }
 }
 
-#[derive(serde::Serialize, serde::Deserialize, Clone)]
+#[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
 pub enum Rarity {
     Gray,
     White,
@@ -185,7 +180,7 @@ impl Into<CSType> for Rarity {
     }
 }
 
-#[derive(serde::Serialize, serde::Deserialize, Clone)]
+#[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
 pub enum DamageType {
     Melee,
     Ranged,
@@ -206,7 +201,7 @@ impl ToString for DamageType {
     }
 }
 
-#[derive(serde::Serialize, serde::Deserialize, Clone)]
+#[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
 pub struct Item {
     pub id : ItemId,
 
@@ -255,7 +250,7 @@ impl Into<CSType> for Item {
 impl Into<CSObject> for Item {
     fn into(self) -> CSObject {
         CSObject{
-            classname: "".to_string(),
+            classname: self.name.clone(),
             namespace: "ModItem".to_string(),
             accessibility: AccessModifier::Public,
             inherits : vec!["ModItem".to_string()],
@@ -288,7 +283,7 @@ impl Into<CSObject> for Item {
     }
 }
 
-#[derive(serde::Serialize, serde::Deserialize, Clone)]
+#[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
 pub struct Recipe {
     result : ItemId,
     ingredients : Vec<ItemId>,
@@ -301,7 +296,7 @@ impl ToString for Recipe {
     }
 }
 
-#[derive(serde::Serialize, serde::Deserialize, Clone)]
+#[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
 pub struct Projectile {
     //TODO
 }
@@ -318,7 +313,7 @@ impl Into<CSType> for Projectile {
     }
 }
 
-#[derive(serde::Serialize, serde::Deserialize, Clone)]
+#[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
 pub struct Tile {
     //TODO
 }
@@ -335,7 +330,7 @@ impl Into<CSType> for Tile {
     }
 }
 
-#[derive(serde::Serialize, serde::Deserialize, Clone)]
+#[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
 pub struct Buff {
     //TODO
 }
@@ -352,7 +347,7 @@ impl Into<CSType> for Buff {
     }
 }
 
-#[derive(serde::Serialize, serde::Deserialize, Clone)]
+#[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
 pub struct Entity {
     //TODO
 }

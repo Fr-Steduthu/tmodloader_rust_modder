@@ -1,4 +1,4 @@
-#[derive(serde::Serialize, serde::Deserialize, Clone)]
+#[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
 pub struct CSType {
     pub prefix : CSTypePrefix,
     pub t : CSPrimalType,
@@ -25,7 +25,7 @@ impl ToString for CSType {
     }
 }
 
-#[derive(serde::Serialize, serde::Deserialize, Clone)]
+#[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
 pub enum CSTypePrefix{ None, Ref, Out, Params}
 
 impl ToString for CSTypePrefix {
@@ -39,7 +39,7 @@ impl ToString for CSTypePrefix {
     }
 }
 
-#[derive(serde::Serialize, serde::Deserialize, Clone)]
+#[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
 pub enum CSPrimalType {
     String,
     Integer,
@@ -60,7 +60,7 @@ impl ToString for CSPrimalType {
     }
 }
 
-#[derive(serde::Serialize, serde::Deserialize, Clone)]
+#[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
 pub struct CSObject {
     pub classname : String,
     pub namespace : String,
@@ -74,11 +74,11 @@ pub struct CSObject {
 
 impl ToString for CSObject {
     fn to_string(&self) -> String {
-        todo!()
+        "Not implemented yet".to_string()
     }
 }
 
-#[derive(serde::Serialize, serde::Deserialize, Clone)]
+#[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
 pub struct CSFunction {
     pub name : String,
     pub access : AccessModifier,
@@ -114,7 +114,7 @@ impl ToString for CSFunction {
     }
 }
 
-#[derive(serde::Serialize, serde::Deserialize, Clone)]
+#[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
 pub enum AccessModifier {
     Private,
     Protected,
