@@ -61,6 +61,12 @@ impl ToString for CSPrimalType {
 }
 
 #[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
+pub struct CSObjectReference {
+    pub name : String,
+    pub namespace : String,
+}
+
+#[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
 pub struct CSObject {
     pub classname : String,
     pub namespace : String,

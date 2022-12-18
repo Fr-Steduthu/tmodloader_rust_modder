@@ -43,6 +43,8 @@ impl ToString for Identifier {
 pub type ItemId = Identifier;
 pub type ProjectileId = Identifier;
 pub type TileId = Identifier;
+pub type BuffId = Identifier;
+pub type
 
 impl Into<CSType> for Identifier {
     fn into(self) -> CSType {
@@ -298,6 +300,7 @@ impl ToString for Recipe {
 
 #[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
 pub struct Projectile {
+    id : ProjectileId,
     //TODO
 }
 
@@ -315,6 +318,7 @@ impl Into<CSType> for Projectile {
 
 #[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
 pub struct Tile {
+    id : TileId,
     //TODO
 }
 
@@ -332,6 +336,7 @@ impl Into<CSType> for Tile {
 
 #[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
 pub struct Buff {
+    id : BuffId,
     //TODO
 }
 
@@ -349,6 +354,7 @@ impl Into<CSType> for Buff {
 
 #[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
 pub struct Entity {
+    id : EntityId,
     //TODO
 }
 
