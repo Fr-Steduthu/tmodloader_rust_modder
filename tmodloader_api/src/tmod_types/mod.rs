@@ -1,4 +1,5 @@
 use csharp_repr::types::{AccessModifier, CSFunction, CSClass, CSType};
+#[path = "tmod_types_impls.rs"] pub mod tmod_types_impls;
 
 pub type Time = u32;
 
@@ -31,38 +32,14 @@ pub enum Identifier {
     Modded(String),
 }
 
-impl ToString for Identifier {
-    fn to_string(&self) -> String {
-        match self {
-            Identifier::Terraria(id) => { id.to_string() }
-            Identifier::Modded(id) => { id.clone() }
-        }
-    }
-}
-
 pub type ItemId = Identifier;
 pub type ProjectileId = Identifier;
 pub type TileId = Identifier;
 pub type BuffId = Identifier;
 pub type EntityId = Identifier;
 
-impl Into<CSType> for Identifier {
-    fn into(self) -> CSType {
-        todo!()
-    }
-}
-
-#[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
-pub enum EntitySound {
-    Terraria(u16),
-    Modded(String),
-}
-
-#[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
-pub enum ItemSound {
-    Terraria(u16),
-    Modded(String),
-}
+pub type EntitySoundID = Identifier;
+pub type ItemSoundID = Identifier;
 
 #[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
 pub enum UseStyle {
@@ -176,12 +153,6 @@ impl From<i8> for Rarity {
     }
 }
 
-impl Into<CSType> for Rarity {
-    fn into(self) -> CSType {
-        CSType::integer()
-    }
-}
-
 #[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
 pub enum DamageType {
     Melee,
@@ -189,18 +160,6 @@ pub enum DamageType {
     Magic,
     Summon,
     Thrown,
-}
-
-impl ToString for DamageType {
-    fn to_string(&self) -> String {
-        match self {
-            DamageType::Melee => { "melee".to_string() }
-            DamageType::Ranged => { "ranged".to_string() }
-            DamageType::Magic => { "magic".to_string() }
-            DamageType::Summon => { "summon".to_string() }
-            DamageType::Thrown => { "thorwn".to_string() }
-        }
-    }
 }
 
 #[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
@@ -222,7 +181,7 @@ pub struct Item {
     pub use_time : self::Time,
     pub use_animation : self::Time,
     pub use_style : self::UseStyle,
-    pub use_sound : self::ItemSound,
+    pub use_sound : self::ItemSoundID,
 
     pub auto_reuse : bool,
     pub consumable : bool, // Loses 1 stack per use
@@ -243,47 +202,11 @@ pub struct Item {
     pub heal_life: u16,
 }
 
-impl Into<CSType> for Item {
-    fn into(self) -> CSType {
-        CSType::class("ModItem".to_string())
-    }
-}
-
-impl Into<CSClass> for Item {
-    fn into(self) -> CSClass {
-        CSClass {
-            classname: self.name.clone(),
-            namespace: "ModItem".to_string(),
-            accessibility: AccessModifier::Public,
-            parents: vec!["ModItem".to_string()],
-            fields: vec![],
-            functions: vec![
-                CSFunction::new("setDefaults".to_string(), vec![], CSType::void(),
-                    vec![
-                        "\t\titem.name = ".to_string(), self.name, ";\n".to_string(),
-                        "\t\titem.tooltip = \"".to_string(), self.tooltip, "\";\n".to_string(),
-                        if <Value as Into<u64>>::into(self.value.clone()) != 0u64 { ["\t\titem.value = ", <Value as Into<u64>>::into(self.value.clone()).to_string().as_str(), ";\n"].join("") } else { "".to_string() },
-                        if let Some(t) = self.damage_type { ["\t\titem.", t.to_string().as_str(), " = true;\n\t\titem.damage = ", self.damage.to_string().as_str(), "\n"].join("") } else { "".to_string() },
-                        if self.use_turn { "\t\tthis.useTurn = true;\n" } else { "" }.to_string(),
-                        if self.auto_reuse { "\t\tthis.autoReuse = true;\n"} else { "" }.to_string(),
-                    ]
-                )
-            ],
-        }
-    }
-}
-
 #[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
 pub struct Recipe {
     result : ItemId,
     ingredients : Vec<ItemId>,
     stations : Vec<TileId>,
-}
-
-impl ToString for Recipe {
-    fn to_string(&self) -> String {
-        todo!()
-    }
 }
 
 #[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
@@ -292,34 +215,10 @@ pub struct Projectile {
     //TODO
 }
 
-impl ToString for Projectile {
-    fn to_string(&self) -> String {
-        todo!()
-    }
-}
-
-impl Into<CSType> for Projectile {
-    fn into(self) -> CSType {
-        CSType::class("Projectile".to_string()).into()
-    }
-}
-
 #[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
 pub struct Tile {
     id : TileId,
     //TODO
-}
-
-impl ToString for Tile {
-    fn to_string(&self) -> String {
-        todo!()
-    }
-}
-
-impl Into<CSType> for Tile {
-    fn into(self) -> CSType {
-        CSType::class("Tile".to_string()).into()
-    }
 }
 
 #[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
@@ -328,32 +227,8 @@ pub struct Buff {
     //TODO
 }
 
-impl ToString for Buff {
-    fn to_string(&self) -> String {
-        todo!()
-    }
-}
-
-impl Into<CSType> for Buff {
-    fn into(self) -> CSType {
-        CSType::class("Buff".to_string())
-    }
-}
-
 #[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
 pub struct Entity {
     id : EntityId,
     //TODO
-}
-
-impl ToString for Entity {
-    fn to_string(&self) -> String {
-        todo!()
-    }
-}
-
-impl Into<CSType> for Entity {
-    fn into(self) -> CSType {
-        CSType::class("Entity".to_string())
-    }
 }

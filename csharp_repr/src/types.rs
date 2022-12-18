@@ -1,5 +1,5 @@
-#[path = "./to_string_impl.rs"] pub mod to_string_impl;
-#[path = "./methods.rs"] pub mod methods;
+#[path = "./trait_impls.rs"] pub mod trait_impls;
+#[path = "./methods.rs"] mod methods;
 
 
 #[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
@@ -36,7 +36,6 @@ pub(crate) enum CSPrimalType {
     Float,
     Void,
     Class(String),
-    Custom(String),
 }
 
 /**********************************
