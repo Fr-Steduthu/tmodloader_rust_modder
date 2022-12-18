@@ -1,5 +1,3 @@
-use std::string::ToString;
-use crate::tmod_types::{Identifier, TileId};
 
 pub mod time {
     use crate::tmod_types::Time;
@@ -17,6 +15,7 @@ pub mod time {
     pub const DAYTIME: (Time, Time) = (4 * HOUR_IG + 30 * MINUTE_IG, 7 * HOUR_IG + 30 * MINUTE_IG);
     pub const NIGHTTIME: (Time, Time) = (7 * HOUR_IG + 30 * MINUTE_IG + SECOND_IG, 4 * HOUR_IG + 30 * MINUTE_IG - SECOND_IG);
 }
+
 pub mod sound_ids {
     pub mod items {
         use crate::tmod_types::{ItemSound, ItemSound::Terraria};
@@ -105,22 +104,22 @@ pub mod sound_ids {
         pub const SEAGULL: EntitySound = Terraria(44);
         pub const DOLPHIN: EntitySound = Terraria(45);
         pub const OWL: EntitySound = Terraria(46);
-        pub const GuitarC: EntitySound = Terraria(47);
-        pub const GuitarD: EntitySound = Terraria(48);
-        pub const GuitarEm: EntitySound = Terraria(49);
-        pub const GuitarG: EntitySound = Terraria(50);
-        pub const GuitarBm: EntitySound = Terraria(51);
-        pub const GuitarAm: EntitySound = Terraria(52);
-        pub const DrumHiHat: EntitySound = Terraria(53);
-        pub const DrumTomHigh: EntitySound = Terraria(54);
-        pub const DrumTomLow: EntitySound = Terraria(55);
-        pub const DrumTomMid: EntitySound = Terraria(56);
-        pub const DrumClosedHiHat: EntitySound = Terraria(57);
-        pub const DrumCymbal1: EntitySound = Terraria(58);
-        pub const DrumCymbal2: EntitySound = Terraria(59);
-        pub const DrumKick: EntitySound = Terraria(60);
-        pub const DrumTamaSnare: EntitySound = Terraria(61);
-        pub const DrumFloorTom: EntitySound = Terraria(62);
+        pub const GUITAR_C: EntitySound = Terraria(47);
+        pub const GUITAR_D: EntitySound = Terraria(48);
+        pub const GUITAR_EM: EntitySound = Terraria(49);
+        pub const GUITAR_G: EntitySound = Terraria(50);
+        pub const GUITAR_BM: EntitySound = Terraria(51);
+        pub const GUITAR_AM: EntitySound = Terraria(52);
+        pub const DRUM_HI_HAT: EntitySound = Terraria(53);
+        pub const DRUM_TOM_HIGH: EntitySound = Terraria(54);
+        pub const DRUM_TOM_LOW: EntitySound = Terraria(55);
+        pub const DRUM_TOM_MID: EntitySound = Terraria(56);
+        pub const DRUM_CLOSED_HI_HAT: EntitySound = Terraria(57);
+        pub const DRUM_CYMBAL_1: EntitySound = Terraria(58);
+        pub const DRUM_CYMBAL_2: EntitySound = Terraria(59);
+        pub const DRUM_KICK: EntitySound = Terraria(60);
+        pub const DRUM_TAMA_SNARE: EntitySound = Terraria(61);
+        pub const DRUM_FLOOR_TOM: EntitySound = Terraria(62);
         pub const RESEARCH: EntitySound = Terraria(63);
         pub const RESEARCH_COMPLETE: EntitySound = Terraria(64);
         pub const QUEEN_SLIME: EntitySound = Terraria(65);
@@ -131,11 +130,10 @@ pub mod sound_ids {
     }
 }
 
-lazy_static::lazy_static!(
-    static ref DIRT_TILE : TileId =
-    Identifier {
-        id: "dirt_tile".to_string(),
-        is_vanilla: true,
-    };
-);
+pub mod tile_ids {
+    use crate::tmod_types::Identifier::Terraria;
+    use crate::tmod_types::TileId;
+
+    pub const DIRT_TILE : TileId = Terraria(1);
+}
 
