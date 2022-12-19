@@ -40,10 +40,10 @@ impl ToCS for DamageType {
 impl Into<CSClass> for Item {
     fn into(self) -> CSClass {
         CSClass {
-            classname: self.name.clone(),
+            name: self.name.clone(),
             namespace: "ModItem".to_string(),
             accessibility: super::AccessModifier::Public,
-            parents: vec!["ModItem".to_string()],
+            parent_classes: vec!["ModItem".to_string()],
             fields: vec![],
             functions: vec![
                 CSFunction::new("setDefaults".to_string(), vec![], CSType::void(),

@@ -1,3 +1,5 @@
+use crate::project::CSNamespace;
+use crate::types::CSClass;
 use super::{CSType, CSFunction, CSPrimalType, AccessModifier};
 
 
@@ -24,6 +26,23 @@ impl CSType {
             t: CSPrimalType::Class(name),
             is_array: false,
         }
+    }
+}
+
+impl CSClass {
+    pub(crate) fn new(name : &str, namespace : *const CSNamespace) -> Self {
+        CSClass {
+            name : name.to_string(),
+            namespace,
+            accessibility: AccessModifier::Private,
+            parent_classes: vec![],
+            fields: vec![],
+            functions: vec![],
+        }
+    }
+
+    pub fn namespace(&self) -> &CSNamespace {
+        unsafe { self.namespace.as_ref().unwrap() }
     }
 }
 
