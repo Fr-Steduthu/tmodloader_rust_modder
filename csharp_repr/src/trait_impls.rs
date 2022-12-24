@@ -1,5 +1,5 @@
 use crate::ToCS;
-use super::{CSClass, CSType, CSPrimalType, CSTypePrefix, AccessModifier};
+use super::{CSClass, CSType, _CSType, CSTypePrefix, AccessModifier};
 
 impl ToCS for CSType {
     fn to_cs(self) -> String {
@@ -21,14 +21,14 @@ impl ToCS for CSTypePrefix {
     }
 }
 
-impl ToCS for CSPrimalType {
+impl ToCS for _CSType {
     fn to_cs(self) -> String {
         match self {
-            CSPrimalType::String => { "string".to_string() }
-            CSPrimalType::Integer => { "int".to_string() }
-            CSPrimalType::Float => { "float".to_string() }
-            CSPrimalType::Class(name) => { name.clone() }
-            CSPrimalType::Void => { "void".to_string() }
+            _CSType::String => { "string".to_string() }
+            _CSType::Integer => { "int".to_string() }
+            _CSType::Float => { "float".to_string() }
+            _CSType::Class(name) => { name.clone() }
+            _CSType::Void => { "void".to_string() }
         }
     }
 }

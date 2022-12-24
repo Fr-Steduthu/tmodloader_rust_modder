@@ -12,7 +12,7 @@ pub struct CSFile {
     content : Vec<String>,
 }
 
-impl From<CSProject> for CSFile {
+impl From<CSProject> for Vec<CSFile> {
     fn from(value: CSProject) -> Self {
         todo!()
     }

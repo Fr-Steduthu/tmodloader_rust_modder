@@ -38,3 +38,13 @@ fn test_nameplaces_names() {
     if !reg.is_match("a_") { panic!("panicked at a_") }
     if !reg.is_match("a_.a") { panic!("panicked at a_.a") }
 }
+
+#[test]
+fn test_expressions() {
+    todo!()
+}
+
+#[test]
+fn test_inference() {
+    todo!()
+}

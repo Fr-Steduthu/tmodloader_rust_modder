@@ -1,13 +1,13 @@
 use crate::project::CSNamespace;
 use crate::types::CSClass;
-use super::{CSType, CSFunction, CSPrimalType, AccessModifier};
+use super::{CSType, CSFunction, _CSType, AccessModifier};
 
 
 impl CSType {
     pub fn void() -> Self {
         CSType {
             prefix: None,
-            t: CSPrimalType::Void,
+            t: _CSType::Void,
             is_array: false,
         }
     }
@@ -15,15 +15,23 @@ impl CSType {
     pub fn integer() -> Self {
         CSType {
             prefix: None,
-            t: CSPrimalType::Integer,
+            t: _CSType::Integer,
             is_array: false,
+        }
+    }
+
+    pub fn string() -> Self {
+        CSType {
+            prefix : None,
+            t : _CSType::String,
+            is_array : false,
         }
     }
 
     pub fn class(name : String) -> Self {
         CSType {
             prefix: None,
-            t: CSPrimalType::Class(name),
+            t: _CSType::Class(name),
             is_array: false,
         }
     }
