@@ -17,6 +17,40 @@ pub struct CSType {
     is_array: bool,
 }
 
+impl CSType {
+    pub fn void() -> Self {
+        CSType {
+            prefix: None,
+            t: _CSType::Void,
+            is_array: false,
+        }
+    }
+
+    pub fn integer() -> Self {
+        CSType {
+            prefix: None,
+            t: _CSType::Integer,
+            is_array: false,
+        }
+    }
+
+    pub fn string() -> Self {
+        CSType {
+            prefix : None,
+            t : _CSType::String,
+            is_array : false,
+        }
+    }
+
+    pub fn class(name : String) -> Self {
+        CSType {
+            prefix: None,
+            t: _CSType::Class(name),
+            is_array: false,
+        }
+    }
+}
+
 impl Display for CSType {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}{}{}",
@@ -154,9 +188,9 @@ impl Display for CSValue {
 
 #[derive(Clone, Debug)]
 pub enum CSIntruction {
+    Value(CSValue),
     Call(Box<CSValue>, Vec<CSValue>),
     Affect(Box<CSValue>, Box<CSValue>),
-    Return(CSValue),
 }
 
 impl Display for CSIntruction {
@@ -167,7 +201,7 @@ impl Display for CSIntruction {
                 "".to_string()
             }
             CSIntruction::Affect(lvalue, rvalue) => { vec![lvalue.to_string(), " = ".to_string(), rvalue.to_string()].join("") }
-            CSIntruction::Return(v) => { format!("return {};", v.to_string()) }
+            CSIntruction::Value(v) => { format!("return {};", v.to_string()) }
         })
     }
 }
@@ -199,7 +233,7 @@ impl CSIntruction {
 
                 Ok(Void)
             }
-            CSIntruction::Return(csvalue) => { Ok(csvalue.cstype()) }
+            CSIntruction::Value(csvalue) => { Ok(csvalue.cstype()) }
         }
     }
 }

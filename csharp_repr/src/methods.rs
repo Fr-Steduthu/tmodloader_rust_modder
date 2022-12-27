@@ -2,41 +2,6 @@ use crate::project::CSNamespace;
 use crate::types::CSClass;
 use super::{CSType, CSFunction, _CSType, AccessModifier};
 
-
-impl CSType {
-    pub fn void() -> Self {
-        CSType {
-            prefix: None,
-            t: _CSType::Void,
-            is_array: false,
-        }
-    }
-
-    pub fn integer() -> Self {
-        CSType {
-            prefix: None,
-            t: _CSType::Integer,
-            is_array: false,
-        }
-    }
-
-    pub fn string() -> Self {
-        CSType {
-            prefix : None,
-            t : _CSType::String,
-            is_array : false,
-        }
-    }
-
-    pub fn class(name : String) -> Self {
-        CSType {
-            prefix: None,
-            t: _CSType::Class(name),
-            is_array: false,
-        }
-    }
-}
-
 impl CSClass {
     pub(crate) fn new(name : &str, namespace : *const CSNamespace) -> Self {
         CSClass {
