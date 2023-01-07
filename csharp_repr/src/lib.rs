@@ -8,10 +8,7 @@ pub trait ToCS {
     fn to_cs(self) -> String;
 }
 
-pub trait IO {
-    fn to_string(&self) -> String;
-    fn from_string(data : &String) -> Self where Self : Sized;
-}
+
 
 #[test]
 fn main() {
