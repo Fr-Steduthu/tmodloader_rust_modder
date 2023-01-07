@@ -1,4 +1,5 @@
 use csharp_repr::ToCS;
+use csharp_repr::types::{CSIntruction, CSValue};
 use super::{
     Identifier,
     DamageType,
@@ -19,9 +20,24 @@ impl ToCS for Identifier {
     }
 }
 
-impl Into<CSType> for Identifier {
-    fn into(self) -> CSType {
-        todo!()
+impl Into<CSIntruction> for Identifier {
+    fn into(self) -> CSIntruction {
+        match self {
+            Identifier::Terraria(id) => CSIntruction::Value(
+                CSValue::Litteral(
+                    id.to_string(),
+                    CSType::string()
+                )
+            ),
+            Identifier::Modded(id) => CSIntruction::Call(
+                    CSValue::ExternalFunction(
+                        String,
+                        vec![CSType::string()],
+                        CSType::integer(),
+                    ),
+                    vec![id]
+            ),
+        }
     }
 }
 
