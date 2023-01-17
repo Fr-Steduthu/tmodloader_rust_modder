@@ -1,15 +1,38 @@
-use crate::ToCS;
+use std::fmt::{Display, Formatter};
+use std::str::FromStr;
 use crate::types::{CSClass};
 
 lazy_static::lazy_static! {
-    static ref NAMESPACE_NAME_REGEX : regex::Regex = regex::Regex::new("[a-z|A-Z]([a-z|_|A-Z|0-9]*)((::[a-z|A-Z]([a-z|_|A-Z|0-9]*))*)").unwrap();
+    pub(crate) static ref NAMESPACE_NAME_REGEX : regex::Regex = regex::Regex::new(r"(?:@?([a-zA-Z]\w)*(?:\.@?[a-zA-Z_]\w*)+)").unwrap();
 }
 
+//#[doc(hidden)]
+pub struct CSCode {
+    content : String,
+}
+
+impl ToString for CSCode {
+    fn to_string(&self) -> String {
+        self.content.clone()
+    }
+}
+impl From<String> for CSCode {
+    fn from(value: String) -> Self {
+        CSCode{ content: value.clone() }
+    }
+}
+impl Display for CSCode {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.content.clone())
+    }
+}
+
+#[doc(hidden)]
 #[derive(Clone, Debug)]
 pub struct CSFile {
-    name : String,
-    extenssion : String,
-    content : Vec<String>,
+    pub(crate) name : String,
+    pub(crate) extenssion : String,
+    pub(crate) content : Vec<CSCode>,
 }
 
 impl From<CSProject> for Vec<CSFile> {
@@ -20,8 +43,8 @@ impl From<CSProject> for Vec<CSFile> {
 
 #[derive(Clone, Debug)]
 pub struct CSProject {
-    name : String,
-    namespaces : Vec<CSNamespace>,
+    pub(crate) name : String,
+    pub(crate) namespaces : Vec<CSNamespace>,
 }
 
 impl CSProject {
@@ -37,24 +60,53 @@ impl CSProject {
         self.namespaces.push(namespace);
         self.namespaces.last_mut().unwrap()
     }
+
+    pub fn new_nested_namespace(&mut self, parent : CSNamespace, ns : String) -> &mut CSNamespace {
+        self.new_namespace([parent.name, ns].join(".").as_str())
+    }
+
+    pub fn namespace(&self, name : String) -> Result<&CSNamespace, String> {
+        for s in self.namespaces.iter() {
+            if s.name == name {
+                return Ok(s);
+            }
+        }
+
+        Err(format!("namespace of long name \"{name}\" not found in project \"{}\"", self.name))
+    }
+
+    pub fn namespace_mut(&mut self, name : String) -> Result<*mut CSNamespace, String> {
+        for index in 0..self.namespaces.len() {
+            let ns = self.namespaces.get_mut(index).unwrap();
+            if ns.name == name {
+                return Ok(ns);
+            }
+        }
+        Err(format!("namespace of long name \"{name}\" not found in project \"{}\"", self.name))
+    }
+
+    pub fn name(&self) -> String {
+        self.name.clone()
+    }
 }
 
-impl ToCS for CSProject {
-    fn to_cs(self) -> String {
-        todo!()
+impl Into<Vec<CSFile>> for CSProject {
+    fn into(self) -> Vec<CSFile> {
+        let v : Vec<CSFile> = vec![];
+
     }
 }
 
 #[doc(hidden)]
 #[derive(Clone, Debug)]
 pub struct CSNamespace {
-    project : * const CSProject,
-    name : String,
-    classes : Vec<CSClass>,
+    pub(crate) project : * mut CSProject,
+    pub(crate) name : String,
+    pub(crate) classes : Vec<CSClass>,
 }
 
 impl CSNamespace {
-    fn new(name : &str, project : *const CSProject) -> Self {
+    fn new(name : &str, project : * mut CSProject) -> Self {
         if NAMESPACE_NAME_REGEX.is_match(name) {
             CSNamespace {
                 project,
@@ -67,7 +119,7 @@ impl CSNamespace {
     }
 
     pub fn project(&self) -> &CSProject {
-        unsafe { self.project.as_ref() }.unwrap()
+        unsafe { self.project.as_mut() }.unwrap()
     }
 
     pub fn new_class(&mut self, name : &str) -> &mut CSClass {
@@ -77,8 +129,12 @@ impl CSNamespace {
     }
 }
 
-impl ToCS for CSNamespace {
-    fn to_cs(self) -> String {
-        todo!()
+impl Into<Vec<CSFile>> for CSNamespace {
+    fn into(self) -> Vec<CSFile> {
+        let mut v = vec![];
+        for class in self.classes {
+            v.push(class.into::<CSFile>())
+        }
+        v
     }
 }

@@ -57,7 +57,7 @@ impl Into<CSClass> for Item {
     fn into(self) -> CSClass {
         CSClass {
             name: self.name.clone(),
-            namespace: "ModItem".to_string(),
+            namespace: &DefaultModItemNamespace,
             accessibility: super::AccessModifier::Public,
             parent_classes: vec!["ModItem".to_string()],
             fields: vec![],

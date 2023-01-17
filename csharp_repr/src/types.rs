@@ -1,13 +1,9 @@
 use std::fmt::{Display, Formatter};
 
-use crate::project::CSNamespace;
-use crate::types::_CSType::Void;
-
-#[path = "./trait_impls.rs"] pub mod trait_impls;
-#[path = "./methods.rs"] mod methods;
+use crate::project::{CSNamespace, CSCode, CSFile};
 
 /**********************************
-*             CSTYPE              *
+*             CSType              *
 **********************************/
 
 #[derive(Clone, Debug, PartialEq)]
@@ -67,6 +63,20 @@ impl Display for CSType {
     }
 }
 
+impl Into<CSCode> for CSType {
+    fn into(self) -> CSCode {
+        CSCode::from(
+            [
+                if let Some(pref) = &self.prefix { pref.clone().to_cs() } else { "".to_string() }.as_str(),
+                self.t.to_cs().as_str(),
+                if self.is_array { "[]" } else { "" }
+            ].join(" ")
+        )
+    }
+}
+
+#[allow(unused)]
+#[doc(hidden)]
 #[derive(Clone, Debug, PartialEq)]
 pub(crate) enum CSTypePrefix{
     Ref,
@@ -84,6 +94,18 @@ impl Display for CSTypePrefix {
     }
 }
 
+impl Into<CSCode> for CSTypePrefix {
+    fn into(self) -> CSCode {
+        format!("{}", match self {
+            CSTypePrefix::Ref => { "ref" }
+            CSTypePrefix::Out => { "out" }
+            CSTypePrefix::Params => { "params" }
+        })
+    }
+}
+
+#[allow(unused)]
+#[doc(hidden)]
 #[derive(Clone, Debug, PartialEq)]
 pub(crate) enum _CSType {
     String,
@@ -105,6 +127,22 @@ impl Display for _CSType {
     }
 }
 
+impl Into<CSCode> for _CSType {
+    fn into(self) -> CSCode {
+        format!("{}", match self {
+            _CSType::String => "string",
+            _CSType::Integer => "integer",
+            _CSType::Float => "float",
+            _CSType::Void => "void",
+            _CSType::Class(n) => n,
+        })
+    }
+}
+
+/**********************************
+*             CSValue             *
+**********************************/
+
 #[derive(Clone, Debug)]
 pub enum CSValue {
     Variable(String, CSType),
@@ -113,6 +151,7 @@ pub enum CSValue {
     ExternalFunction(String, Vec<CSType>, CSType),
 }
 
+#[allow(unused)]
 impl CSValue {
     fn identifier(&self) -> String {
         match self {
@@ -152,8 +191,8 @@ impl CSValue {
         match self {
             CSValue::Function(f) => {
                 let mut ret = vec![];
-                for (_, t) in f.arguments {
-                    ret.push(t);
+                for (_, t) in &f.arguments {
+                    ret.push(t.clone());
                 }
                 Ok(ret)
             }
@@ -186,6 +225,34 @@ impl Display for CSValue {
     }
 }
 
+impl Into<CSCode> for CSValue {
+    fn into(self) -> CSCode {
+        CSCode::from(
+            match self {
+                CSValue::Variable(n, _) |
+                CSValue::Litteral(n, _)  => { format!("{n}") }
+                CSValue::Function(func) => { format!("{func}") }
+                CSValue::ExternalFunction(name, args, ret) => {
+                    format!("{name}({} -> {})",
+                        {
+                           let mut s : Vec<String> = vec!["".to_string()];
+                           for t in args {
+                               s.push(t.into::<CSCode>().to_string());
+                           }
+                           s.join(", ")
+                        },
+                        ret.into::<CSCode>()
+                    )
+                }
+            }
+        )
+    }
+}
+
+/**********************************
+*          CSInstruction          *
+**********************************/
+
 #[derive(Clone, Debug)]
 pub enum CSIntruction {
     Value(CSValue),
@@ -196,16 +263,62 @@ pub enum CSIntruction {
 impl Display for CSIntruction {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", match self {
-
             CSIntruction::Call(fun, args) => {
-                "".to_string()
+                format!(
+                    "{}({})",
+                    match &fun {
+                        &CSValue::Function(csobj) => { csobj.name() }
+                        &CSValue::ExternalFunction(name, _, _) => { name }
+                        _ => return Err("Cannot call a value as you would a function")
+                    },
+                    {
+                        //TODO : Verifier le matching des types
+                        let mut v = vec![];
+                        for arg in args {
+                            v.push(arg.to_string())
+                        }
+                        v.join(", ")
+                    }
+                )
             }
-            CSIntruction::Affect(lvalue, rvalue) => { vec![lvalue.to_string(), " = ".to_string(), rvalue.to_string()].join("") }
-            CSIntruction::Value(v) => { format!("return {};", v.to_string()) }
+            CSIntruction::Affect(lvalue, rvalue) => format!("{lvalue} = {rvalue};"),
+            CSIntruction::Value(v) => format!("return {v};"),
         })
     }
 }
 
+impl Into<CSCode> for CSIntruction {
+    fn into(self) -> CSCode {
+        CSCode::from(
+            format!("{}",
+                    match self {
+                        CSIntruction::Call(fun, args) => {
+                            format!(
+                                "{}({})",
+                                match &fun {
+                                    &CSValue::Function(csobj) => { csobj.name() }
+                                    &CSValue::ExternalFunction(name, _, _) => { name }
+                                    _ => return Err("Cannot call a value as you would a function")
+                                },
+                                {
+                                    //TODO : Verifier le matching des types
+                                    let mut v = vec![];
+                                    for arg in args {
+                                        v.push(arg.into::<CSCode>().to_string())
+                                    }
+                                    v.join(", ")
+                                }
+                            )
+                        }
+                        CSIntruction::Affect(lvalue, rvalue) => format!("{lvalue} = {rvalue};"),
+                        CSIntruction::Value(v) => format!("return {};", v.into::<CSCode>()),
+                    }
+            )
+        )
+    }
+}
+
+#[allow(unused)]
 impl CSIntruction {
     pub(crate) fn get_type(self) -> Result<CSType, String> {
         match self {
@@ -214,7 +327,7 @@ impl CSIntruction {
                     return Err(format!("{} is not a function", func.identifier()));
                 }
 
-                for (arg_v, arg_t) in arg_values.zip(func.arguments().unwrap()) {
+                for (arg_v, arg_t) in arg_values.iter().zip(func.arguments().unwrap()) {
                     if arg_v.cstype() != arg_t {
                         return Err(format!("Type missmatch : {} != {}", arg_v.cstype(), arg_t))
                     }
@@ -231,13 +344,14 @@ impl CSIntruction {
                     return Err(format!("Type mismatch : {} != {}", rvalue.cstype(), lvalue.cstype()));
                 }
 
-                Ok(Void)
+                Ok(CSType::void())
             }
             CSIntruction::Value(csvalue) => { Ok(csvalue.cstype()) }
         }
     }
 }
 
+#[doc(hidden)]
 #[derive(Clone, Debug)]
 pub enum AccessModifier {
     Private,
@@ -255,6 +369,17 @@ impl Display for AccessModifier {
     }
 }
 
+impl Into<CSCode> for AccessModifier {
+    fn into(self) -> CSCode {
+        CSCode::from(
+            match self {
+                AccessModifier::Private => { "private " }
+                AccessModifier::Protected => { "protected " }
+                AccessModifier::Public => { "public " }
+            }
+        )
+    }
+}
 
 /**********************************
 *             CSCLASS             *
@@ -263,7 +388,7 @@ impl Display for AccessModifier {
 #[derive(Clone, Debug)]
 pub struct CSClass {
     pub name : String,
-    namespace : * const CSNamespace,
+    pub namespace : * const CSNamespace,
     pub accessibility : AccessModifier,
 
     pub parent_classes : Vec<String>,
@@ -272,18 +397,86 @@ pub struct CSClass {
     pub functions : Vec<CSFunction>,
 }
 
+impl CSClass {
+    pub(crate) fn new(name : &str, namespace : *const CSNamespace) -> Self {
+        CSClass {
+            name : name.to_string(),
+            namespace,
+            accessibility: AccessModifier::Private,
+            parent_classes: vec![],
+            fields: vec![],
+            functions: vec![],
+        }
+    }
+
+    pub fn namespace(&self) -> &CSNamespace {
+        unsafe { self.namespace.as_ref().unwrap() }
+    }
+}
+
+impl Display for CSClass {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        todo!()
+    }
+}
+
+impl Into<CSCode> for CSClass {
+    fn into(self) -> CSCode {
+        todo!()
+    }
+}
+
+/**********************************
+*           CSFunction            *
+**********************************/
+
 #[derive(Clone, Debug)]
 pub struct CSFunction {
-    pub name : String,
+    name : String,
     pub access : AccessModifier,
     pub arguments : Vec<(String, CSType)>,
 
-    pub body : String,
+    pub body : Vec<CSIntruction>,
 
     pub return_value : CSType,
 
     pub is_override : bool,
     pub scoped_variables : Vec<(String, CSType)>
+}
+
+impl CSFunction {
+    pub fn new(name : String, args : Vec<(String, CSType)>, ret : CSType, instructions: Vec<CSIntruction>) -> Self {
+        CSFunction {
+            name,
+            access: AccessModifier::Public,
+            arguments: args,
+            body: instructions,
+            return_value: ret,
+            is_override: false,
+            scoped_variables: vec![],
+        }
+    }
+
+    pub fn make_override(mut arg : Self) -> Self {
+        arg.is_override = true;
+        arg
+    }
+    /*
+    pub fn method(subject : CSClassReference, name : String, args : Vec<(String, CSType)>, ret : CSType, instructions: Vec<String>) -> Self {
+        CSFunction {
+            name,
+            access: AccessModifier::Public,
+            arguments: args,
+            body: instructions.join(""),
+            return_value: ret,
+            is_override: false,
+            scoped_variables: CS,
+        }
+    }*/
+
+    pub fn name(&self) -> String {
+        self.name.clone()
+    }
 }
 
 impl Display for CSFunction {
@@ -299,5 +492,11 @@ impl Display for CSFunction {
                },
                self.return_value
         )
+    }
+}
+
+impl Into<CSCode> for CSFunction {
+    fn into(self) -> CSCode {
+        todo!()
     }
 }
