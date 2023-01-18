@@ -5,7 +5,7 @@ use super::{
     DamageType,
     CSType,
     CSClass,
-    CSFunction,
+    CSMethod,
     Item, Value,
     Recipe,
     Projectile, Tile, Buff, Entity
@@ -62,8 +62,8 @@ impl Into<CSClass> for Item {
             parent_classes: vec!["ModItem".to_string()],
             fields: vec![],
             functions: vec![
-                CSFunction::new("setDefaults".to_string(), vec![], CSType::void(),
-                                vec![
+                CSMethod::new("setDefaults".to_string(), vec![], CSType::void(),
+                              vec![
                                     "\t\titem.name = ".to_string(), self.name, ";\n".to_string(),
                                     "\t\titem.tooltip = \"".to_string(), self.tooltip, "\";\n".to_string(),
                                     if <Value as Into<u64>>::into(self.value.clone()) != 0u64 { ["\t\titem.value = ", <Value as Into<u64>>::into(self.value.clone()).to_string().as_str(), ";\n"].join("") } else { "".to_string() },

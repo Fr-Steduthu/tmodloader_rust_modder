@@ -1,4 +1,4 @@
-use csharp_repr::types::{AccessModifier, CSFunction, CSClass, CSType};
+use csharp_repr::types::{AccessModifier, CSMethod, CSClass, CSType};
 #[path = "tmod_types_impls.rs"] pub mod tmod_types_impls;
 
 pub type Time = u32;

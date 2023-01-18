@@ -1,14 +1,37 @@
 #[cfg(test)] use crate::project::{CSNamespace, CSProject};
-#[cfg(test)] use crate::types::CSClass;
+#[cfg(test)] use crate::types::{CSClass};
 
 pub mod types;
 pub mod project;
 
+pub mod serialization;
+
+
+//#[doc(hidden)]
+#[derive(Clone, Debug)]
+pub struct CSCode {
+    content : String,
+}
+
+impl From<String> for CSCode {
+    fn from(value: String) -> Self {
+        CSCode{ content: value.clone() }
+    }
+}
+
+impl std::fmt::Display for CSCode {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.content.clone())
+    }
+}
+
+pub mod into_cscode;
+
 #[test]
 fn main() {
     let mut proj : CSProject = CSProject::new("Terraria mod project test 1");
-    let namespace : &mut CSNamespace = proj.new_namespace("crate.root.package");
-    let mod_item : &mut CSClass = namespace.new_class("ModItem");
+    #[allow(non_snake_case)] let MyItemsNamespace = { proj.new_namespace("MyItems"); proj.namespace_mut("MyItems").unwrap() };
+    #[allow(non_snake_case)] let MyItems_General_Namespace = proj.get_new_namespace("MyItems.General");
 }
 
 #[test]
@@ -32,11 +55,6 @@ fn test_nameplaces_names() {
 }
 
 #[test]
-fn test_expressions() {
-    todo!()
-}
-
-#[test]
-fn test_inference() {
-    todo!()
+fn test_CSCode_instruction() {
+    todo!("Implement test")
 }
