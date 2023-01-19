@@ -8,7 +8,7 @@ use crate::project::{CSNamespace};
 #[derive(Clone, Debug, PartialEq)]
 pub struct CSType {
     prefix : Option<CSTypePrefix>,
-    t : _CSType,
+    t : CSPrimitive,
     is_array: bool,
 }
 
@@ -16,8 +16,8 @@ impl CSType {
     pub fn prefix(&self) -> Option<CSTypePrefix> {
         self.prefix.clone()
     }
-    pub fn cstype(&self) -> CSType {
-        self.ty.clone()
+    pub fn primitive_type(&self) -> CSPrimitive {
+        self.t.clone()
     }
     pub fn is_array(&self) -> bool {
         self.is_array.clone()
@@ -26,28 +26,28 @@ impl CSType {
     pub fn void() -> Self {
         CSType {
             prefix: None,
-            t: _CSType::Void,
+            t: CSPrimitive::Void,
             is_array: false,
         }
     }
     pub fn integer() -> Self {
         CSType {
             prefix: None,
-            t: _CSType::Integer,
+            t: CSPrimitive::Integer,
             is_array: false,
         }
     }
     pub fn string() -> Self {
         CSType {
             prefix : None,
-            t : _CSType::String,
+            t : CSPrimitive::String,
             is_array : false,
         }
     }
     pub fn class(name : String) -> Self {
         CSType {
             prefix: None,
-            t: _CSType::Class(name),
+            t: CSPrimitive::Class(name),
             is_array: false,
         }
     }
@@ -72,7 +72,7 @@ impl Display for CSType {
 #[allow(unused)]
 #[doc(hidden)]
 #[derive(Clone, Debug, PartialEq)]
-pub(crate) enum CSTypePrefix{
+pub enum CSTypePrefix{
     Ref,
     Out,
     Params
@@ -91,7 +91,7 @@ impl Display for CSTypePrefix {
 #[allow(unused)]
 #[doc(hidden)]
 #[derive(Clone, Debug, PartialEq)]
-pub(crate) enum _CSType {
+pub enum CSPrimitive {
     String,
     Integer,
     Float,
@@ -99,14 +99,14 @@ pub(crate) enum _CSType {
     Class(String),
 }
 
-impl Display for _CSType {
+impl Display for CSPrimitive {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", match self {
-            _CSType::String => { "string" }
-            _CSType::Integer => { "integer"}
-            _CSType::Float => { "float" }
-            _CSType::Void => { "void" }
-            _CSType::Class(n) => { n }
+            CSPrimitive::String => { "string" }
+            CSPrimitive::Integer => { "integer"}
+            CSPrimitive::Float => { "float" }
+            CSPrimitive::Void => { "void" }
+            CSPrimitive::Class(n) => { n }
         })
     }
 }
@@ -128,6 +128,12 @@ impl CSRValue {
         match self {
             CSRValue::Litteral(_, t) => t.clone(),
             CSRValue::LValue(v) => v.cstype.clone(),
+            CSRValue::FuncCall(fun, args) => {
+                match fun {
+                    CSFunctionTerm::Function(csmethod) => csmethod.return_type(),
+                    CSFunctionTerm::ExternalFunction(_, _, out) => out.clone(),
+                }
+            }
         }
     }
 
@@ -137,6 +143,12 @@ impl Display for CSRValue {
         write!(f, "{}", match self {
             CSRValue::Litteral(n, _) => n.clone(),
             CSRValue::LValue(v) => v.to_string(),
+            CSRValue::FuncCall(term, args) => {
+                match term {
+                    CSFunctionTerm::Function(csmethod) => todo!(),
+                    CSFunctionTerm::ExternalFunction(name, input, output) => todo!(),
+                }
+            }
         })
     }
 }
@@ -150,7 +162,7 @@ pub struct CSLValue {
 }
 
 impl CSLValue {
-    pub(crate) fn id(&self) -> String {
+    pub(crate) fn identifier(&self) -> String {
         self.identifier.clone()
     }
     pub(crate) fn cstype(&self) -> CSType {
@@ -218,6 +230,7 @@ impl Display for CSIntruction {
                    CSIntruction::Affect(lval, rval) => format!("{lval} = {rval};"),
                    CSIntruction::Call(fun, args) => todo!("Display for CSIntruction::Call"),
                    CSIntruction::Return(rval) => todo!("Display for CSIntruction::Return"),
+                   CSIntruction::AffectToCall(var, callable, args) => todo!("Display for CSInstruction::AffectToCall"),
                }
         )
     }

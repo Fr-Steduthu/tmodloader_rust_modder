@@ -4,9 +4,6 @@
 pub mod types;
 pub mod project;
 
-pub mod serialization;
-
-
 //#[doc(hidden)]
 #[derive(Clone, Debug)]
 pub struct CSCode {
@@ -26,6 +23,7 @@ impl std::fmt::Display for CSCode {
 }
 
 pub mod into_cscode;
+pub mod serialization;
 
 #[test]
 fn main() {

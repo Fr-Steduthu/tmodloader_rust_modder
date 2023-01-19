@@ -110,18 +110,22 @@ impl CSNamespace {
         self.name.clone()
     }
 
-    pub fn class(&self, class_name : &str) -> &CSClass {
+    pub fn class(&self, class_name : &str) -> Option<&CSClass> {
         for c in self.classes.iter() {
             if class_name.to_string() == c.name() {
-                return c
+                return Some(c);
             }
         }
+
+        None
     }
-    pub fn class_mut(&mut self, class_name : &str) -> &mut CSClass {
+    pub fn class_mut(&mut self, class_name : &str) -> Option<&mut CSClass> {
         for c in self.classes.iter_mut() {
             if class_name.to_string() == c.name() {
-                return c
+                return Some(c);
             }
         }
+
+        None
     }
 }

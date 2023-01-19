@@ -1,16 +1,20 @@
-use std::thread::AccessError;
 use crate::{
     CSCode,
     types::{
         CSClass,
+
         CSTypePrefix,
         CSType,
-        _CSType,
+        CSPrimitive,
+
         AccessModifier,
+
         CSFunctionTerm,
         CSIntruction,
         CSLValue,
         CSRValue,
+
+        CSMethod,
     }
 };
 
@@ -35,32 +39,61 @@ impl From<CSType> for CSCode {
                     } else {
                         "".to_string()
                     },
-                    Into::<CSCode>::into(value.cstype()),
+                    Into::<CSCode>::into(value.primitive_type()),
                     if value.is_array() { "[]" } else { "" },
             )
         )
     }
 }
 
-impl From<_CStype> for CSCode {
-    fn from(value: _CStype) -> Self {
+impl From<CSPrimitive> for CSCode {
+    fn from(value: CSPrimitive) -> Self {
         CSCode::from(
             format!("{}", match value {
-                _CSType::String => "string".to_string(),
-                _CSType::Integer => "integer".to_string(),
-                _CSType::Float => "float".to_string(),
-                _CSType::Void => "void".to_string(),
-                _CSType::Class(n) => n,
+                CSPrimitive::String => "string".to_string(),
+                CSPrimitive::Integer => "integer".to_string(),
+                CSPrimitive::Float => "float".to_string(),
+                CSPrimitive::Void => "void".to_string(),
+                CSPrimitive::Class(n) => n,
             })
         )
     }
 }
 
-impl From<CSRValue> for CSCode {
-    fn from(value : CSRValue) -> Self {
+impl TryFrom<CSRValue> for CSCode {
+    fn try_from(value : CSRValue) -> Result<Self, Self::Error> {
         match value {
             CSRValue::Litteral(n, _) => CSCode::from(n),
-            CSRValue::LValue(lv) => lv.into(),
+            CSRValue::LValue(lv) => Ok(lv.into()),
+            CSRValue::FuncCall(term, args) => {
+                Ok(CSCode::from(
+                    match term {
+                        CSFunctionTerm::Function(csmethod) =>
+                            format!(
+                                "{}({})",
+                                csmethod.name(),
+                                {
+                                    let mut v = vec![];
+                                    for b in args.iter() {
+                                        v.push(*b.to_string());
+                                    }
+                                    v.join(", ")
+                                }
+                            ),
+                        CSFunctionTerm::ExternalFunction(name, input, output) => {
+                            format!("{name}({})",
+                                {
+                                    let mut v = vec![];
+                                    for b in args.iter() {
+                                        v.push(*b.to_string());
+                                    }
+                                    v.join(", ")
+                                }
+                            )
+                        }
+                    }
+                ))
+            }
         }
     }
 }
@@ -72,7 +105,7 @@ impl From<CSLValue> for CSCode {
 }
 
 impl From<CSFunctionTerm> for CSCode {
-    fn from(value : CSFunctionTerm) -> CSCode {
+    fn from(value : CSFunctionTerm) -> Self {
         CSCode::from(
             match value {
                 CSFunctionTerm::Function(f) => f.name(),
@@ -82,9 +115,8 @@ impl From<CSFunctionTerm> for CSCode {
     }
 }
 
-
 impl From<CSIntruction> for CSCode {
-    fn From(value : CSIntruction) -> CSCode {
+    fn from(value : CSIntruction) -> Self {
         CSCode::from(
             format!("{}",
                     todo!("From<CSCode> for CSIntruction")
@@ -94,8 +126,9 @@ impl From<CSIntruction> for CSCode {
 }
 
 impl From<CSClass> for CSCode {
-    fn From(value : CSClass) -> CSCode {
-        todo!("From<CSClass> for CSCode")
+    fn from(value : CSClass) -> CSCode {
+        todo!("Ajouter les imports de namespace");
+        todo!("From<CSClass> for CSCode");
     }
 }
 
@@ -111,8 +144,8 @@ impl From<AccessModifier> for CSCode {
     }
 }
 
-impl From<CSCode> for CSMethod {
-    fn From(self) -> CSCode {
+impl From<CSMethod> for CSCode {
+    fn from(value : CSMethod) -> CSCode {
         todo!("From<CSCode> for CSMethod")
     }
 }
