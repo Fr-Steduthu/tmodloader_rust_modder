@@ -1,5 +1,6 @@
 #[cfg(test)] use crate::project::{CSNamespace, CSProject};
 #[cfg(test)] use crate::types::{CSClass};
+use crate::types::{CSIntruction, CSType};
 
 pub mod types;
 pub mod project;
@@ -55,4 +56,9 @@ fn test_nameplaces_names() {
 #[test]
 fn test_CSCode_instruction() {
     todo!("Implement test")
+}
+
+#[test]
+fn test_inference() {
+    let a = CSIntruction::declare("a", CSType::integer(), CSIntruction::litteral("3"));
 }

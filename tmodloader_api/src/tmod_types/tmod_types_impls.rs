@@ -61,7 +61,7 @@ impl Into<CSClass> for Item {
             accessibility: super::AccessModifier::Public,
             parent_classes: vec!["ModItem".to_string()],
             fields: vec![],
-            functions: vec![
+            methods: vec![
                 CSMethod::new("setDefaults".to_string(), vec![], CSType::void(),
                               vec![
                                     "\t\titem.name = ".to_string(), self.name, ";\n".to_string(),

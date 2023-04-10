@@ -1,5 +1,6 @@
 use std::fmt::{Display, Formatter};
 use crate::project::{CSNamespace};
+use crate::types::AccessModifier::Protected;
 
 /**********************************
 *             CSType              *
@@ -119,6 +120,7 @@ impl Display for CSPrimitive {
 #[derive(Clone, Debug)]
 pub enum CSRValue {
     Litteral(String, CSType),
+    //Const(String, CSType, Box<CSRValue>),
     LValue(CSLValue),
     FuncCall(CSFunctionTerm, Vec<Box<CSRValue>>)
 }
@@ -128,7 +130,7 @@ impl CSRValue {
         match self {
             CSRValue::Litteral(_, t) => t.clone(),
             CSRValue::LValue(v) => v.cstype.clone(),
-            CSRValue::FuncCall(fun, args) => {
+            CSRValue::FuncCall(fun, _) => {
                 match fun {
                     CSFunctionTerm::Function(csmethod) => csmethod.return_type(),
                     CSFunctionTerm::ExternalFunction(_, _, out) => out.clone(),
@@ -145,8 +147,8 @@ impl Display for CSRValue {
             CSRValue::LValue(v) => v.to_string(),
             CSRValue::FuncCall(term, args) => {
                 match term {
-                    CSFunctionTerm::Function(csmethod) => todo!(),
-                    CSFunctionTerm::ExternalFunction(name, input, output) => todo!(),
+                    CSFunctionTerm::Function(csmethod) => todo!("Display for CSFunctionTerm + arg"),
+                    CSFunctionTerm::ExternalFunction(name, input, output) => todo!("Display for CSFunctionTerm + arg"),
                 }
             }
         })
@@ -217,11 +219,16 @@ pub enum CSIntruction {
 }
 
 impl CSIntruction {
-    pub fn declare(variable : &str, cstype : CSType, value : CSIntruction) -> Self {
-        todo!("implement functions for CSInstruction")
+    pub fn declare(variable : &str, cstype : CSType, value : CSLValue, scopedVariable : Vec<CSLValue>) -> Self {
+        CSIntruction::Declaration(variable.to_string(), cstype, value)
+    }
+    pub fn affect(variable : CSLValue, value : CSRValue) -> Self {
+        CSIntruction::Affect(variable, value)
+    }
+    pub fn litteral(name : &str, ty : CSType) -> CSRValue {
+        CSRValue::Litteral(name.to_string(), ty)
     }
 }
-
 impl Display for CSIntruction {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}",
@@ -246,10 +253,10 @@ pub struct CSClass {
     pub namespace : * const CSNamespace,
     pub accessibility : AccessModifier,
 
-    pub parent_classes : Vec<String>,
+    pub parent_classes : Vec<*const CSClass>,
 
     pub fields : Vec<(String, AccessModifier, CSType)>,
-    pub functions : Vec<(AccessModifier, CSMethod)>,
+    pub methods: Vec<(AccessModifier, CSMethod)>,
 }
 
 impl CSClass {
@@ -260,13 +267,29 @@ impl CSClass {
             accessibility: AccessModifier::Private,
             parent_classes: vec![],
             fields: vec![],
-            functions: vec![],
+            methods: vec![],
         }
     }
 
     pub fn inherits(&mut self, parent : CSClass) {
         self.parent_classes.push(parent.name());
-        todo!("Inherit fields /!\\ remember to mind the accessibility")
+
+        self.fields.append({ // Supression des champs prives
+            let mut v = vec![];
+            for field in parent.fields.clone().into_iter().map(
+                |(name, access, ty)| {
+                    match access {
+                        AccessModifier::Private => None,
+                        AccessModifier::Protected |
+                        AccessModifier::Public => (vec![parent.name(),name].join("."), access, ty),
+                    }
+                }
+            ).collect::<Vec<Option<(String, AccessModifier, CSType)>>>() {
+                if let Some(f) = field { v.push(f) }
+            }
+            v
+        }
+        );
     }
 
     pub fn new_field(&mut self, f : (String, AccessModifier, CSType)) {
@@ -283,18 +306,34 @@ impl CSClass {
 
         todo!("Creation des methodes");
 
-        self.functions.push((access, f));
-        match self.functions.last_mut().unwrap() { (_, m) => m }
+        self.methods.push((access, f));
+        match self.methods.last_mut().unwrap() { (_, m) => m }
     }
-    pub fn new_override(&mut self, /*ARGS*/) {
-        todo!("Create new method (override)")
+    pub fn new_override(&mut self, name : &str) -> Option<&mut CSMethod> {
+        for parent in self.parent_classes {
+            match parent.methods.iter().find(
+                |(acc, cs)| {
+                    if acc != AccessModifier::Private && cs.name() == name.to_string() {
+                        return true
+                    }
+                    false
+                }
+            ) {
+                None => None,
+                Some((acc, meth)) => self.new_method(name, acc)
+            }
+        }
     }
 
     pub fn name(&self) -> String {
         self.name.clone()
     }
-    pub fn method(&self, name : &str) -> &CSMethod {
-        todo!("Implement CSClass::method(String)")
+
+    pub fn method(&self, name : &str) -> Option<&CSMethod> {
+        match self.methods.iter().find(|m|{ match *m { (_, meth) => meth.name() == name.to_string()}}) {Some((_, meth)) => Some(meth), _ => None}
+    }
+    pub fn method_mut(&mut self, name : &str) -> Option<&mut CSMethod> {
+        match self.methods.iter_mut().find(|m|{ match m { (_, meth) => meth.name() == name.to_string()}}) {Some((acc, meth)) => Some(meth), _ => None}
     }
 
     pub fn namespace(&self) -> &CSNamespace {
@@ -362,8 +401,12 @@ impl CSMethod {
     pub fn name(&self) -> String {
         self.name.clone()
     }
+
     pub fn arguments(&self) -> Vec<(String, CSType)> {
         self.arguments.clone()
+    }
+    pub fn arguments_mut(&mut self) -> &Vec<(String, CSType)> {
+        self.arguments.as_mut()
     }
 
     pub fn body(&self) -> Vec<CSIntruction> {

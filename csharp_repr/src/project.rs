@@ -97,10 +97,6 @@ impl CSNamespace {
         }
     }
 
-    pub fn project(&self) -> &CSProject {
-        unsafe { self.project.as_ref() }.unwrap()
-    }
-
     pub fn new_class(&mut self, name : &str) -> &mut CSClass {
         self.classes.push(CSClass::new(name, self));
         self.classes.last_mut().unwrap()
@@ -108,6 +104,9 @@ impl CSNamespace {
 
     pub fn name(&self) -> String {
         self.name.clone()
+    }
+    pub fn project(&self) -> &CSProject {
+        unsafe { self.project.as_ref() }.unwrap()
     }
 
     pub fn class(&self, class_name : &str) -> Option<&CSClass> {

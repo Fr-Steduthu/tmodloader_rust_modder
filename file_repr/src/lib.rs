@@ -1,5 +1,5 @@
 use std::io;
-use std::io::{ErrorKind, Read, Write};
+use std::io::{Read, Write};
 use crate::FolderContent::{Folder as FCFolder, File as FCFile};
 
 #[derive(Clone, Debug)]
@@ -143,17 +143,19 @@ impl From<File> for FolderContent {
 }
 
 impl TryFrom<FolderContent> for Folder {
+    type Error = String;
     fn try_from(value: FolderContent) -> Result<Self, Self::Error> {
         match value {
-            FCFile(file) => Err(Self::Error),
+            FCFile(file) => Err("Could not convert File to Folder".to_string()),
             FCFolder(folder) => Ok(folder),
         }
     }
 }
 impl TryFrom<FolderContent> for File {
+    type Error = String;
     fn try_from(value: FolderContent) -> Result<Self, Self::Error> {
         match value {
-            FCFolder(folder) => Err(Self::Error),
+            FCFolder(folder) => Err("Could not convert Folder to File".to_string()),
             FCFile(file) => Ok(file),
         }
     }
