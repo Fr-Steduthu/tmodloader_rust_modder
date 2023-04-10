@@ -1,5 +1,5 @@
 [package]
-name = "tmodloader_api"
+name = "tmodloader_repr"
 version = "0.1.0"
 edition = "2021"
 
