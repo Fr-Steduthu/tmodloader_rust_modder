@@ -9,4 +9,4 @@ edition = "2021"
 lazy_static = "1.4.0"
 serde = { version = "1.0.151", features = ["derive"] }
 
-csharp_repr = { path = "../csharp_repr" }
+csharp_repr = { path = "../old/csharp_repr" }

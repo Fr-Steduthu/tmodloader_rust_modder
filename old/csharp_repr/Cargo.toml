@@ -9,4 +9,4 @@ edition = "2021"
 lazy_static = "1.4.0"
 regex = "1.7.0"
 
-file_repr = {path = "../file_repr"}
+file_repr = {path = "../file_repr" }
