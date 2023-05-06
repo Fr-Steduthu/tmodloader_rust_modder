@@ -6,7 +6,4 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-lazy_static = "1.4.0"
-serde = { version = "1.0.151", features = ["derive"] }
-
-csharp_repr = { path = "../old/csharp_repr" }
+serde = { version = "1.0.162", features = ["derive"] }

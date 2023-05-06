@@ -1,5 +1,5 @@
-use csharp_repr::types::{AccessModifier, CSMethod, CSClass, CSType};
-#[path = "tmod_types_impls.rs"] pub mod tmod_types_impls;
+use std::fmt::{Display, Formatter};
+use crate::CSTemplate;
 
 pub type Time = u32;
 
@@ -32,6 +32,18 @@ pub enum Identifier {
     Modded(String),
 }
 
+impl Display for Identifier
+{
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result
+    {
+        match self
+        {
+            Identifier::Terraria(id) => write!(f, "{id}"),
+            Identifier::Modded(id) => write!(f, "{id}"),
+        }
+    }
+}
+
 pub type ItemId = Identifier;
 pub type ProjectileId = Identifier;
 pub type TileId = Identifier;
@@ -50,15 +62,25 @@ pub enum UseStyle {
     HoldOut
 }
 
-impl Into<u16> for UseStyle {
-    fn into(self) -> u16 {
-        match self {
+impl From<UseStyle> for u16
+{
+    fn from(value: UseStyle) -> Self
+    {
+        match value {
             UseStyle::Swing => { 1 }
             UseStyle::Eat => { 2 }
             UseStyle::Stab => { 3 }
             UseStyle::HoldUp => { 4 }
             UseStyle::HoldOut => { 5 }
         }
+    }
+}
+
+impl CSTemplate for UseStyle
+{
+    fn to_cs(self) -> String
+    {
+        u16::from(self).to_cs()
     }
 }
 
@@ -70,19 +92,23 @@ pub struct Value {
     pub copper : u16
 }
 
-impl Into<u64> for Value {
-    fn into(self) -> u64 {
-        self.copper as u64 +
-            self.silver as u64 * 100 +
-            self.gold as u64 * 10000 +
-            self.platinum as u64 * 1000000
+impl From<Value> for u64
+{
+    fn from(value: Value) -> Self
+    {
+        value.copper as u64 +
+            value.silver as u64 * 100 +
+            value.gold as u64 * 10000 +
+            value.platinum as u64 * 1000000
         as u64
     }
 }
 
-impl Into<CSType> for Value {
-    fn into(self) -> CSType {
-        todo!()
+impl CSTemplate for Value
+{
+    fn to_cs(self) -> String
+    {
+        u64::from(self).to_string()
     }
 }
 
@@ -106,9 +132,9 @@ pub enum Rarity {
     Quest,
 }
 
-impl Into<i8> for Rarity {
-    fn into(self) -> i8 {
-        match self {
+impl From<Rarity> for i8 {
+    fn from(value: Rarity) -> Self {
+        match value {
             Rarity::Gray => { -1 }
             Rarity::White => { 0 }
             Rarity::Blue => { 1 }
@@ -153,6 +179,14 @@ impl From<i8> for Rarity {
     }
 }
 
+impl CSTemplate for Rarity
+{
+    fn to_cs(self) -> String
+    {
+        i8::from(self).to_cs()
+    }
+}
+
 #[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
 pub enum DamageType {
     Melee,
@@ -161,6 +195,21 @@ pub enum DamageType {
     Summon,
     Thrown,
 }
+
+impl CSTemplate for DamageType
+{
+    fn to_cs(self) -> String
+    {
+        match self {
+            DamageType::Melee => { "this.melee = true".to_string() }
+            DamageType::Ranged => { "this.ranged = true".to_string() }
+            DamageType::Magic => { "this.magic = true".to_string() }
+            DamageType::Summon => { "this.summon = true".to_string() }
+            DamageType::Thrown => { "this.thrown = true".to_string() }
+        }
+    }
+}
+
 
 #[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
 pub struct Item {
@@ -178,10 +227,10 @@ pub struct Item {
     pub height : u16,
 
     //Animation
-    pub use_time : self::Time,
-    pub use_animation : self::Time,
-    pub use_style : self::UseStyle,
-    pub use_sound : self::ItemSoundID,
+    pub use_time : Time,
+    pub use_animation : Time,
+    pub use_style : UseStyle,
+    pub use_sound : ItemSoundID,
 
     pub auto_reuse : bool,
     pub consumable : bool, // Loses 1 stack per use
@@ -196,7 +245,7 @@ pub struct Item {
     pub knockback : u16,
 
     pub shoot : Option<ProjectileId>,
-    pub shoot_speed : self::Time,
+    pub shoot_speed : Time,
     pub use_ammo: Option<ItemId>,
 
     pub heal_life: u16,
@@ -209,26 +258,43 @@ pub struct Recipe {
     stations : Vec<TileId>,
 }
 
+/*impl CSTemplate for Recipe
+{
+    fn to_cs(self) -> String
+    {
+        format!(
+        "\
+        \tpublic override void AddRecipes()\n\r\
+        \t{\n\r
+        \t\tModRecipe recipe = new ModRecipe(mod);\n\r\
+        \t\trecipe.AddIngredient(ItemID.DirtBlock, 10);\n\r\
+        \t\trecipe.AddTile(TileID.WorkBenches);\n\r\
+        \t\trecipe.SetResult(this);\n\r\
+        \t\trecipe.AddRecipe();\n\r\
+        \t}\n\r")
+    }
+}*/
+
 #[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
 pub struct Projectile {
     id : ProjectileId,
-    //TODO
+    // TODO
 }
 
 #[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
 pub struct Tile {
     id : TileId,
-    //TODO
+    // TODO
 }
 
 #[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
 pub struct Buff {
     id : BuffId,
-    //TODO
+    // TODO
 }
 
 #[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
 pub struct Entity {
     id : EntityId,
-    //TODO
+    // TODO
 }

@@ -1,8 +1,10 @@
+use crate::CSTemplate;
 use crate::tmod_types::{Identifier, Item, Value, UseStyle, DamageType};
 use crate::terraria_defaults::time::TICK;
 
 impl Item {
-    pub fn new(name : String, tooltip : String) -> Self {
+    pub fn new(name : String, tooltip : String) -> Self
+    {
         Item{
             id: Identifier::Modded(name.clone()),
             name: name,
@@ -36,7 +38,8 @@ impl Item {
         }
     }
 
-    pub fn usable(name : String, tooltip : String) -> Self {
+    pub fn usable(name : String, tooltip : String) -> Self
+    {
         let mut item = Self::new(name, tooltip);
 
         item.use_time = 20 * TICK;
@@ -48,7 +51,8 @@ impl Item {
         return item;
     }
 
-    pub fn consumable(name : String, tooltip : String) -> Self {
+    pub fn consumable(name : String, tooltip : String) -> Self
+    {
         let mut item = Self::usable(name, tooltip);
 
         item.consumable = true;
@@ -56,7 +60,8 @@ impl Item {
         return item;
     }
 
-    pub fn weapon(name : String, tooltip : String, damage : i64, damage_type : DamageType) -> Self {
+    pub fn weapon(name : String, tooltip : String, damage : i64, damage_type : DamageType) -> Self
+    {
         let mut item = Self::usable(name, tooltip);
 
         item.damage = damage;
@@ -67,11 +72,61 @@ impl Item {
 }
 
 impl Item {
-    pub fn sword(name: String, tooltip : String, damage : i64) -> Self {
+    pub fn sword(name: String, tooltip : String, damage : i64) -> Self
+    {
         let mut item = Self::weapon(name, tooltip, damage, DamageType::Melee);
 
         item.use_turn = true;
 
         return item;
+    }
+}
+
+impl CSTemplate for Item
+{
+    fn to_cs(self) -> String
+    {
+        let mut class = crate::concat_cs_code!(
+            "public class ", self.name.clone(), " : ModItem \n\r\
+            {\n\r\
+            \tpublic override void SetDefaults()\n\r\
+            \t{\n\r\
+            \t\titem.name = \"", self.name, "\";\n\r\
+            \t\titem.toolTip = \"", self.tooltip, "\";\n\r\
+            \n\r\
+            \t\titem.damage = ", self.damage, ";\n\r\
+            \t\titem.knockBack = ", self.knockback, ";\n\r\
+            \t\t", self.damage_type.expect("Optional damage type not supported yet").to_cs() ,"\
+            \n\r\
+            \t\titem.autoReuse = ", self.auto_reuse, ";\n\r\
+            \t\titem.value = ", self.value, ";\n\r\
+            \t\titem.rare = ", self.rarity, ";\n\r\
+            \n\r\
+            \t\titem.width = ", self.width, ";\n\r\
+            \t\titem.height = ", self.height, ";\n\r\
+            \n\r\
+            \t\titem.useTime = ", self.use_time, ";\n\r\
+            \t\titem.useAnimation = ", self.use_animation, ";\n\r\
+            \t\titem.useStyle = ", self.use_style, ";\n\r\
+            \t\titem.useSound = ", self.use_sound, ";\n\r\
+            \t}\n\r\
+            "
+        );
+
+        class.push_str("}");
+        class
+
+        /*
+
+        // Debug recipe // TODO : Remove
+        "\tpublic override void AddRecipes()",
+        "\t{",
+            "\t\tModRecipe recipe = new ModRecipe(mod);",
+            //"\t\trecipe.AddIngredient(ItemID.DirtBlock, 10);",
+            "\t\trecipe.AddTile(TileID.WorkBenches);",
+            "\t\trecipe.SetResult(this);",
+            "\t\trecipe.AddRecipe();",
+        "\t}",
+        */
     }
 }
