@@ -1,4 +1,4 @@
-use crate::CSTemplate;
+use crate::cs::CSTemplate;
 use crate::tmod_types::{Identifier, Item, Value, UseStyle, DamageType};
 use crate::terraria_defaults::time::TICK;
 
@@ -97,6 +97,9 @@ impl CSTemplate for Item
             \t\titem.damage = ", self.damage, ";\n\r\
             \t\titem.knockBack = ", self.knockback, ";\n\r\
             \t\t", self.damage_type.expect("Optional damage type not supported yet").to_cs() ,"\
+            \n\r\
+            \t\titem.consumable = ", self.consumable, ";\n\r\
+            \t\titem.maxStack = ", self.max_stack, ";\n\r\
             \n\r\
             \t\titem.autoReuse = ", self.auto_reuse, ";\n\r\
             \t\titem.value = ", self.value, ";\n\r\

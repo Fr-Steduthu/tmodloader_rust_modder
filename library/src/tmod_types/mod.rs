@@ -1,23 +1,151 @@
 use std::fmt::{Display, Formatter};
-use crate::CSTemplate;
+use crate::concat_cs_code;
+use crate::cs::CSTemplate;
 
 pub type Time = u32;
 
 #[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
 pub struct Mod {
-    name : String,
-    id : [char; 3],
-    namespaces : Vec<Namespace>
+    pub(crate) name : String,
+    pub(crate) display_name: String,
+    pub(crate) author: String,
+    pub(crate) version: String,
+    pub(crate) description: String,
+
+    //pub(crate) id : [char; 3],
+    pub(crate) contents: Vec<ModFolder>
+}
+
+impl Mod
+{
+    pub fn init(name: &str, display_name: &str, author: &str, version: &str, desc: &str) -> Self
+    {
+        Mod
+        {
+            name: name.to_string(),
+            display_name: display_name.to_string(),
+            author: author.to_string(),
+            version: version.to_string(),
+            description: desc.to_string(),
+            //id: [],
+            contents: vec![],
+        }
+    }
+
+
+    pub fn export(self, project_path: &str)
+    {
+        Mod::export_build_txt(
+            self.display_name,
+            self.author,
+            self.version
+        );
+        Mod::export_description(self.description);
+
+        Mod::export_launch_settings();
+        // /icon.png
+
+        Mod::export_mod_file(self.name.clone());
+
+        Mod::export_csproj(self.name);
+
+        // /<namespaces>/*.*
+        for folders in self.contents
+        {
+            todo!("Export files in ModContents")
+        }
+    }
+}
+
+// Exports
+impl Mod
+{
+    fn export_mod_file(backend_name: String)
+    {
+        let txt = concat_cs_code!("\
+        using Terraria.ModLoader;\n\r\
+        \n\r\
+        namespace ", backend_name.to_string(),"\n\r\
+        {\n\r\
+            public class ", backend_name.to_string()," : Mod\n\r\
+            {\n\r\
+            }\n\r\
+        }\
+        ");
+
+        todo!("Save file to /<ModName>.cs")
+    }
+
+    fn export_build_txt(display_name: String, author: String, version: String)
+    {
+        let txt = concat_cs_code!(
+            "displayName = ", display_name, "\n\r\
+            author = ", author, "\n\r\
+            version = ", version
+        );
+
+        todo!("Save the file to /build.txt")
+    }
+
+    fn export_description(description: String)
+    {
+        let txt = description;
+
+        todo!("Save the file to /description.txt")
+    }
+
+    fn export_launch_settings()
+    {
+        let txt = "\
+        {\n\r\
+          \"profiles\": {\n\r\
+            \"Terraria\": {\n\r\
+              \"commandName\": \"Executable\",\n\r\
+              \"executablePath\": \"dotnet\",\n\r\
+              \"commandLineArgs\": \"$(tMLPath)\",\n\r\
+              \"workingDirectory\": \"$(tMLSteamPath)\"\n\r\
+            },\n\r\
+            \"TerrariaServer\": {\n\r\
+              \"commandName\": \"Executable\",\n\r\
+              \"executablePath\": \"dotnet\",\n\r\
+              \"commandLineArgs\": \"$(tMLServerPath)\",\n\r\
+              \"workingDirectory\": \"$(tMLSteamPath)\"\n\r\
+            }
+          }
+        }\
+        ".to_string();
+
+        todo!("Save the file to /Properties/launchSettings.json")
+    }
+
+    fn export_csproj(backend_name: String)
+    {
+        let txt = concat_cs_code!(
+            "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n\r\
+            <Project Sdk=\"Microsoft.NET.Sdk\">\n\r\
+              <Import Project=\"..\tModLoader.targets\" />\n\r\
+              <PropertyGroup>\n\r\
+                <AssemblyName>", backend_name, "</AssemblyName>\n\r\
+                <TargetFramework>net6.0</TargetFramework>\n\r\
+                <PlatformTarget>AnyCPU</PlatformTarget>\n\r\
+                <LangVersion>latest</LangVersion>\n\r\
+              </PropertyGroup>\n\r\
+              <ItemGroup>\n\r\
+                <PackageReference Include=\"tModLoader.CodeAssist\" Version=\"0.1.*\" />
+              </ItemGroup>
+            </Project>"
+        );
+    }
 }
 
 #[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
-pub struct Namespace {
+pub struct ModFolder {
     name : String,
-    contents : Vec<NamespaceContents>,
+    contents : Vec<ModFolderContents>,
 }
 
 #[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
-pub enum NamespaceContents {
+pub enum ModFolderContents {
     Item(Item),
     Projectile(Projectile),
     Buff(Buff),
@@ -213,7 +341,7 @@ impl CSTemplate for DamageType
 
 #[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
 pub struct Item {
-    pub id : ItemId,
+    pub(crate) id : ItemId,
 
     pub name : String,
     pub tooltip : String,
@@ -258,22 +386,31 @@ pub struct Recipe {
     stations : Vec<TileId>,
 }
 
-/*impl CSTemplate for Recipe
+impl CSTemplate for Recipe
 {
     fn to_cs(self) -> String
     {
-        format!(
-        "\
-        \tpublic override void AddRecipes()\n\r\
-        \t{\n\r
-        \t\tModRecipe recipe = new ModRecipe(mod);\n\r\
-        \t\trecipe.AddIngredient(ItemID.DirtBlock, 10);\n\r\
-        \t\trecipe.AddTile(TileID.WorkBenches);\n\r\
-        \t\trecipe.SetResult(this);\n\r\
-        \t\trecipe.AddRecipe();\n\r\
-        \t}\n\r")
+        let mut s = String::new();
+
+        s.push_str("\tpublic override void AddRecipes()\n\r\t{\n\r\t\tModRecipe recipe = new ModRecipe(mod);\n\r");
+
+        for ingr in self.ingredients
+        {
+            s.push_str("\t\trecipe.AddIngredient(ItemID.DirtBlock, 10);\n\r");
+        }
+
+        for tile in self.stations
+        {
+            s.push_str("\t\trecipe.AddTile(TileID.WorkBenches);\n\r");
+        }
+
+        s.push_str(concat_cs_code!("\t\trecipe.SetResult(", self.result, ");\n\r").as_str());
+
+        s.push_str("\t\trecipe.AddRecipe();\n\r\t}\n\r");
+
+        s
     }
-}*/
+}
 
 #[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
 pub struct Projectile {
