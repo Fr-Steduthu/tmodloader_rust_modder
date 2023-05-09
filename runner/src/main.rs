@@ -54,6 +54,7 @@ fn main() {
         }
     );
 
+    println!("Exporting project");
     m.export(r"C:\Users\erwan\Documents\My Games\Terraria\tModLoader\ModSources\");
     println!("Project has been exported");
 }
