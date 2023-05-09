@@ -1,8 +1,10 @@
 use std::collections::hash_map::DefaultHasher;
 use std::fmt::{Display, Formatter};
+use std::fs::File;
 use std::hash::{Hash, Hasher};
+use std::io::{ErrorKind, Write};
 use crate::concat_cs_code;
-use crate::cs::CSTemplate;
+use crate::cs::IntoCSCode;
 use crate::tmod_types::Identifier::Terraria;
 use crate::terraria_defaults::time::TICK;
 
@@ -44,25 +46,62 @@ impl Mod
 
     pub fn export(self, project_path: &str)
     {
+
+        match std::fs::create_dir(project_path)
+        {
+            Ok(_) => Ok(()),
+            Err(v) =>
+                {
+                    if v.kind() == ErrorKind::AlreadyExists
+                    {
+                        Ok(())
+                    }
+                    else
+                    {
+                        Err(v)
+                    }
+                },
+        }.expect("Could not create project folder");
+
         Mod::export_build_txt(
+            project_path,
             self.display_name,
             self.author,
             self.version
         );
-        Mod::export_description(self.description);
+        Mod::export_description(project_path, self.description);
 
-        Mod::export_launch_settings();
+        Mod::export_launch_settings(project_path);
         // /icon.png
 
-        Mod::export_mod_file(self.name.clone());
+        Mod::export_mod_file(project_path, self.name.clone());
 
-        Mod::export_csproj(self.name);
+        Mod::export_csproj(project_path, self.name.clone());
 
         // /<namespaces>/*.*
-        for item in self.items
         {
-            //item.export();
-            todo!("Export files in item folder")
+            let item_folder_path = {
+                let mut s = project_path.to_string();
+                s.push_str("/Items");
+                s
+            };
+            match std::fs::create_dir(item_folder_path.clone())
+            {
+                Ok(_) => Ok(()),
+                Err(v) =>
+                    {
+                        if v.kind() == ErrorKind::AlreadyExists
+                        {
+                            Ok(())
+                        } else {
+                            Err(v)
+                        }
+                    }
+            }.expect("Could not create items folder");
+            for item in self.items
+            {
+                item.export(item_folder_path.clone(), &self.name.clone());
+            }
         }
     }
 }
@@ -70,7 +109,7 @@ impl Mod
 // Exports
 impl Mod
 {
-    fn export_mod_file(backend_name: String)
+    fn export_mod_file(path: &str, backend_name: String)
     {
         let txt = concat_cs_code!("\
         using Terraria.ModLoader;\n\r\
@@ -83,10 +122,17 @@ impl Mod
         }\
         ");
 
-        todo!("Save file to /<ModName>.cs")
+        let mut fd : File = File::create({
+            let mut s = path.to_string();
+            s.push_str("/");
+            s.push_str(&backend_name);
+            s.push_str(".cs");
+            s
+        }).expect("Could not create mod file");
+        fd.write(txt.as_bytes()).expect("Could not write to file");
     }
 
-    fn export_build_txt(display_name: String, author: String, version: String)
+    fn export_build_txt(path: &str, display_name: String, author: String, version: String)
     {
         let txt = concat_cs_code!(
             "displayName = ", display_name, "\n\r\
@@ -94,17 +140,27 @@ impl Mod
             version = ", version
         );
 
-        todo!("Save the file to /build.txt")
+        let mut fd : File = File::create({
+            let mut s = path.to_string();
+            s.push_str("/build.txt");
+            s
+        }).expect("Could not create mod file");
+        fd.write(txt.as_bytes()).expect("Could not write to file");
     }
 
-    fn export_description(description: String)
+    fn export_description(path: &str, description: String)
     {
         let txt = description;
 
-        todo!("Save the file to /description.txt")
+        let mut fd : File = File::create({
+            let mut s = path.to_string();
+            s.push_str("/description.txt");
+            s
+        }).expect("Could not create mod file");
+        fd.write(txt.as_bytes()).expect("Could not write to file");
     }
 
-    fn export_launch_settings()
+    fn export_launch_settings(path: &str)
     {
         let txt = "\
         {\n\r\
@@ -125,10 +181,34 @@ impl Mod
         }\
         ".to_string();
 
-        todo!("Save the file to /Properties/launchSettings.json")
+        let mut fd : File = File::create({
+            let mut s = path.to_string();
+
+            match std::fs::create_dir({
+                let mut s = path.to_string();
+                s.push_str("/Properties");
+                s
+            }) {
+                Ok(_) => Ok(()),
+                Err(v) =>
+                    {
+                        if v.kind() == ErrorKind::AlreadyExists
+                        {
+                            Ok(())
+                        }
+                        else
+                        {
+                            Err(v)
+                        }
+                    },
+            }.expect("Could not create \"/Properties\" directory");
+            s.push_str("/Properties/launchSettings.json");
+            s
+        }).expect("Could not create mod file");
+        fd.write(txt.as_bytes()).expect("Could not write to file");
     }
 
-    fn export_csproj(backend_name: String)
+    fn export_csproj(path: &str, backend_name: String)
     {
         let txt = concat_cs_code!(
             "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n\r\
@@ -145,6 +225,15 @@ impl Mod
               </ItemGroup>
             </Project>"
         );
+
+        let mut fd : File = File::create({
+            let mut s = path.to_string();
+            s.push_str("/");
+            s.push_str(&backend_name);
+            s.push_str(".csproj");
+            s
+        }).expect("Could not create mod file");
+        fd.write(txt.as_bytes()).expect("Could not write to file");
     }
 }
 
@@ -185,9 +274,9 @@ impl Display for Identifier
 #[derive(serde::Serialize, serde::Deserialize, Clone, Debug, Hash)]
 pub struct ItemId(pub(crate) Identifier);
 
-impl CSTemplate for ItemId
+impl IntoCSCode for ItemId
 {
-    fn to_cs(self) -> String
+    fn into_cs(self) -> String
     {
         if let Terraria(tid) = self.0
         {
@@ -209,15 +298,16 @@ impl From<Identifier> for ItemId
 #[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
 pub struct ProjectileId(pub(crate) Identifier);
 
-impl CSTemplate for ProjectileId
+impl IntoCSCode for ProjectileId
 {
-    fn to_cs(self) -> String
+    fn into_cs(self) -> String
     {
         if let Terraria(tid) = self.0
         {
             return tid.to_string();
         }
-        todo!("Implement to_cs() for the ProjectileId(Modded(str))")
+
+        return self.0.modded()
     }
 }
 
@@ -232,15 +322,21 @@ impl From<Identifier> for ProjectileId
 #[derive(serde::Serialize, serde::Deserialize, Clone, Debug, Hash)]
 pub struct TileId(pub(crate) Identifier);
 
-impl CSTemplate for TileId
+impl TileId
 {
-    fn to_cs(self) -> String
+    fn into_cs(self, mod_name: String) -> String
     {
-        if let Terraria(tid) = self.0
+        match self.0
         {
-            return tid.to_string();
+            Terraria(t_id) => t_id.to_string(),
+            Identifier::Modded(m_id) => {
+                let mut s = String::new();
+                s.push_str(&mod_name);
+                s.push_str(&vec!["\"", &mod_name, "\""].join(""));
+                s.push_str(&m_id);
+                s
+            },
         }
-        todo!("Implement to_cs() for the TileId(Modded(str))")
     }
 }
 
@@ -255,9 +351,9 @@ impl From<Identifier> for TileId
 #[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
 pub struct BuffId(pub(crate) Identifier);
 
-impl CSTemplate for BuffId
+impl IntoCSCode for BuffId
 {
-    fn to_cs(self) -> String
+    fn into_cs(self) -> String
     {
         if let Terraria(tid) = self.0
         {
@@ -278,9 +374,9 @@ impl From<Identifier> for BuffId
 #[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
 pub struct EntityId(pub(crate) Identifier);
 
-impl CSTemplate for EntityId
+impl IntoCSCode for EntityId
 {
-    fn to_cs(self) -> String
+    fn into_cs(self) -> String
     {
         if let Terraria(tid) = self.0
         {
@@ -301,9 +397,9 @@ impl From<Identifier> for EntityId
 #[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
 pub struct EntitySoundId(pub(crate) Identifier);
 
-impl CSTemplate for EntitySoundId
+impl IntoCSCode for EntitySoundId
 {
-    fn to_cs(self) -> String
+    fn into_cs(self) -> String
     {
         if let Terraria(tid) = self.0
         {
@@ -324,9 +420,9 @@ impl From<Identifier> for EntitySoundId
 #[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
 pub struct ItemSoundId(pub(crate) Identifier);
 
-impl CSTemplate for ItemSoundId
+impl IntoCSCode for ItemSoundId
 {
-    fn to_cs(self) -> String
+    fn into_cs(self) -> String
     {
         if let Terraria(tid) = self.0
         {
@@ -368,11 +464,11 @@ impl From<UseStyle> for u16
     }
 }
 
-impl CSTemplate for UseStyle
+impl IntoCSCode for UseStyle
 {
-    fn to_cs(self) -> String
+    fn into_cs(self) -> String
     {
-        u16::from(self).to_cs()
+        u16::from(self).into_cs()
     }
 }
 
@@ -396,9 +492,9 @@ impl From<Value> for u64
     }
 }
 
-impl CSTemplate for Value
+impl IntoCSCode for Value
 {
-    fn to_cs(self) -> String
+    fn into_cs(self) -> String
     {
         u64::from(self).to_string()
     }
@@ -471,11 +567,11 @@ impl From<i8> for Rarity {
     }
 }
 
-impl CSTemplate for Rarity
+impl IntoCSCode for Rarity
 {
-    fn to_cs(self) -> String
+    fn into_cs(self) -> String
     {
-        i8::from(self).to_cs()
+        i8::from(self).into_cs()
     }
 }
 
@@ -488,16 +584,16 @@ pub enum DamageType {
     Thrown,
 }
 
-impl CSTemplate for DamageType
+impl IntoCSCode for DamageType
 {
-    fn to_cs(self) -> String
+    fn into_cs(self) -> String
     {
         match self {
-            DamageType::Melee => { "this.melee = true".to_string() }
-            DamageType::Ranged => { "this.ranged = true".to_string() }
-            DamageType::Magic => { "this.magic = true".to_string() }
-            DamageType::Summon => { "this.summon = true".to_string() }
-            DamageType::Thrown => { "this.thrown = true".to_string() }
+            DamageType::Melee => { "item.melee = true;".to_string() }
+            DamageType::Ranged => { "item.ranged = true;".to_string() }
+            DamageType::Magic => { "item.magic = true;".to_string() }
+            DamageType::Summon => { "item.summon = true;".to_string() }
+            DamageType::Thrown => { "item.thrown = true;".to_string() }
         }
     }
 }
@@ -555,7 +651,7 @@ impl Item // Getters
 
 impl Item // Setters
 {
-    pub fn add_recipe(&mut self, ingredients: Vec<ItemId>, stations: Vec<TileId>)
+    pub fn add_recipe(&mut self, ingredients: Vec<(ItemId, u16)>, stations: Vec<TileId>)
     {
         self.recipes.push(
             Recipe
@@ -615,7 +711,7 @@ impl Item // Setters
         ammunition: ItemId
     )
     {
-        todo!("Implement Item::set_proejctile")
+        todo!("Implement Item::set_projectile")
     }
 
     pub fn set_damage(&mut self, amount: i64, damage_type: DamageType, knockback: u16)
@@ -713,44 +809,49 @@ impl Item // Templates
 
 impl Item // Export
 {
-    pub fn export(self, path: String)
+    pub fn export(self, path: String, mod_backend_name: &str)
     {
-        self.to_cs();
-
-        todo!("Save to file <path>/<ItemName>.cs")
+        let mut fd : File = File::create({
+            let mut s = path.to_string();
+            s.push_str("/");
+            s.push_str(&self.name);
+            s.push_str(".cs");
+            s
+        }).expect("Could not create item file");
+        fd.write(self.into_cs(mod_backend_name).as_bytes()).expect("Could not write to item file");
     }
 }
 
-impl CSTemplate for Item
+impl Item
 {
-    fn to_cs(self) -> String
+    pub fn into_cs(self, mod_name: &str) -> String
     {
         let mut class = crate::concat_cs_code!(
             "public class ", self.name.clone(), " : ModItem \n\r\
             {\n\r\
             \tpublic override void SetDefaults()\n\r\
             \t{\n\r\
-            \t\titem.name = \"", self.name, "\";\n\r\
-            \t\titem.toolTip = \"", self.tooltip, "\";\n\r\
+            \t\titem.name = \"", &self.name.into_cs(), "\";\n\r\
+            \t\titem.toolTip = \"", &self.tooltip.into_cs(), "\";\n\r\
             \n\r\
-            \t\titem.damage = ", self.damage, ";\n\r\
-            \t\titem.knockBack = ", self.knockback, ";\n\r\
-            \t\t", self.damage_type.expect("Optional damage type not supported yet").to_cs() ,"\
+            \t\titem.damage = ", &self.damage.into_cs(), ";\n\r\
+            \t\titem.knockBack = ", &self.knockback.into_cs(), ";\n\r\
+            \t\t", &self.damage_type.expect("Optional damage type not supported yet").into_cs() ,"\
             \n\r\
-            \t\titem.consumable = ", self.consumable, ";\n\r\
-            \t\titem.maxStack = ", self.max_stack, ";\n\r\
+            \t\titem.consumable = ", &self.consumable.into_cs(), ";\n\r\
+            \t\titem.maxStack = ", &self.max_stack.into_cs(), ";\n\r\
             \n\r\
-            \t\titem.autoReuse = ", self.auto_reuse, ";\n\r\
-            \t\titem.value = ", self.value, ";\n\r\
-            \t\titem.rare = ", self.rarity, ";\n\r\
+            \t\titem.autoReuse = ", &self.auto_reuse.into_cs(), ";\n\r\
+            \t\titem.value = ", &self.value.into_cs(), ";\n\r\
+            \t\titem.rare = ", &self.rarity.into_cs(), ";\n\r\
             \n\r\
-            \t\titem.width = ", self.width, ";\n\r\
-            \t\titem.height = ", self.height, ";\n\r\
+            \t\titem.width = ", &self.width.into_cs(), ";\n\r\
+            \t\titem.height = ", &self.height.into_cs(), ";\n\r\
             \n\r\
-            \t\titem.useTime = ", self.use_time, ";\n\r\
-            \t\titem.useAnimation = ", self.use_animation, ";\n\r\
-            \t\titem.useStyle = ", self.use_style, ";\n\r\
-            \t\titem.useSound = ", self.use_sound, ";\n\r\
+            \t\titem.useTime = ", &self.use_time.into_cs(), ";\n\r\
+            \t\titem.useAnimation = ", &self.use_animation.into_cs(), ";\n\r\
+            \t\titem.useStyle = ", &self.use_style.into_cs(), ";\n\r\
+            \t\titem.useSound = ", &self.use_sound.into_cs(), ";\n\r\
             \t}\n\r\
             \n\r",
             {
@@ -762,7 +863,7 @@ impl CSTemplate for Item
 
                     for recipe in self.recipes
                     {
-                        s.push_str(recipe.to_cs(true).as_str());
+                        s.push_str(recipe.into_cs(mod_name.to_string(), true).as_str());
                     }
 
                     s.push_str("\t}\n\r");
@@ -782,13 +883,13 @@ impl CSTemplate for Item
 #[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
 pub struct Recipe {
     result : ItemId,
-    ingredients : Vec<ItemId>,
+    ingredients : Vec<(ItemId, u16)>,
     stations : Vec<TileId>,
 }
 
 impl Recipe
 {
-    fn to_cs(self, set_result_to_this: bool) -> String
+    fn into_cs(self, mod_name: String, set_result_to_this: bool) -> String
     {
         let mut s = String::new();
 
@@ -805,18 +906,24 @@ impl Recipe
 
         s.push_str(" = new ModRecipe(mod);\n\r");
 
-        for ingr in self.ingredients
+        for (ingr, amount) in self.ingredients
         {
-            s.push_str("\t\trecipe.AddIngredient(ItemID.DirtBlock, 10);\n\r");
+            s.push_str("\t\trecipe.AddIngredient(");
+            s.push_str(&ingr.into_cs());
+            s.push_str(", ");
+            s.push_str(&amount.to_string());
+            s.push_str(")\n\r");
         }
 
         for tile in self.stations
         {
-            s.push_str("\t\trecipe.AddTile(TileID.WorkBenches);\n\r");
+            s.push_str("\t\trecipe.AddTile(");
+            s.push_str(&tile.into_cs(mod_name.to_string()));
+            s.push_str(");\n\r");
         }
 
         s.push_str(concat_cs_code!("\t\trecipe.SetResult(",
-            if set_result_to_this { "this".to_string() } else { self.result.to_cs() }
+            if set_result_to_this { "this".to_string() } else { self.result.into_cs() }
             , ");\n\r"
         ).as_str());
 

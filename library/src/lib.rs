@@ -6,16 +6,27 @@ pub mod terraria_defaults;
 
 pub mod cs
 {
-    pub trait CSTemplate
+    use std::fmt::Display;
+
+    pub trait IntoCSCode
     {
-        fn to_cs(self) -> String;
+        fn into_cs(self) -> String;
     }
 
-    use std::fmt::Display;
-    impl<T> CSTemplate for T where T : Display
+    trait _AutoIntoCSCodeMarker {}
+
+    impl _AutoIntoCSCodeMarker for String {}
+    impl<'a> _AutoIntoCSCodeMarker for &'a str {}
+    impl _AutoIntoCSCodeMarker for i64 {}
+    impl _AutoIntoCSCodeMarker for u16 {}
+    impl _AutoIntoCSCodeMarker for bool {}
+    impl _AutoIntoCSCodeMarker for u64 {}
+    impl _AutoIntoCSCodeMarker for u32 {}
+    impl _AutoIntoCSCodeMarker for i8 {}
+
+    impl<T : _AutoIntoCSCodeMarker + Display> IntoCSCode for T
     {
-        fn to_cs(self) -> String
-        {
+        fn into_cs(self) -> String {
             self.to_string()
         }
     }
@@ -24,13 +35,14 @@ pub mod cs
     #[macro_export]
     macro_rules! concat_cs_code
     {
+        () => {};
         ( $( $x:expr ),* ) =>
         {
             {
                 let mut s : String = String::new();
-                $(s.push_str($x.to_cs().as_str());)*
+                $(s.push_str($x.clone().into_cs().as_str());)*
                 s
             }
-        };
+        }
     }
 }

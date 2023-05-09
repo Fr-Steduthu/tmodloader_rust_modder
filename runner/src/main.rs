@@ -1,11 +1,16 @@
-use library::cs::CSTemplate;
+use library::cs::IntoCSCode;
 use library::tmod_types::{DamageType, Item, ItemId, Mod};
 use library::tmod_types::Identifier::Terraria;
 
 fn main() {
     println!("Hi, I'm the development project!");
 
-    let mut it = Item::sword("Toto".to_string(), "Tata".to_string(), 64);
+    let mut it = Item::sword(
+        "Toto".to_string(),
+        "Tata".to_string(),
+        64
+    );
+
     it.add_recipe(
         vec![],
         vec![
@@ -13,7 +18,7 @@ fn main() {
         ]
     );
 
-    println!("{}", it.to_cs())
+    println!("{}", it.into_cs(""))
 }
 
 #[test]
@@ -24,7 +29,7 @@ fn test_mod_export()
         "GeneratedMod",
         "Steduthu",
         "0.1",
-        "Andu'fallah'dor"
+        "Andu'falah'dor"
     );
 
     m.add_item(
