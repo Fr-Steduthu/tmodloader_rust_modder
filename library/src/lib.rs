@@ -18,11 +18,11 @@ pub mod cs
     impl _AutoIntoCSCodeMarker for String {}
     impl<'a> _AutoIntoCSCodeMarker for &'a str {}
     impl _AutoIntoCSCodeMarker for i64 {}
-    impl _AutoIntoCSCodeMarker for u16 {}
+    impl _AutoIntoCSCodeMarker for i8 {}
     impl _AutoIntoCSCodeMarker for bool {}
     impl _AutoIntoCSCodeMarker for u64 {}
+    impl _AutoIntoCSCodeMarker for u16 {}
     impl _AutoIntoCSCodeMarker for u32 {}
-    impl _AutoIntoCSCodeMarker for i8 {}
 
     impl<T : _AutoIntoCSCodeMarker + Display> IntoCSCode for T
     {

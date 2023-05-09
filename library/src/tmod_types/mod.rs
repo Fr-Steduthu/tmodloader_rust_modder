@@ -47,7 +47,14 @@ impl Mod
     pub fn export(self, project_path: &str)
     {
 
-        match std::fs::create_dir(project_path)
+        let project_path = {
+            let mut s = project_path.to_string();
+            s.push_str("/");
+            s.push_str(self.name.as_str());
+            s
+        };
+
+        match std::fs::create_dir(&project_path)
         {
             Ok(_) => Ok(()),
             Err(v) =>
@@ -64,24 +71,24 @@ impl Mod
         }.expect("Could not create project folder");
 
         Mod::export_build_txt(
-            project_path,
+            &project_path,
             self.display_name,
             self.author,
             self.version
         );
-        Mod::export_description(project_path, self.description);
+        Mod::export_description(&project_path, self.description);
 
-        Mod::export_launch_settings(project_path);
+        Mod::export_launch_settings(&project_path);
         // /icon.png
 
-        Mod::export_mod_file(project_path, self.name.clone());
+        Mod::export_mod_file(&project_path, self.name.clone());
 
-        Mod::export_csproj(project_path, self.name.clone());
+        Mod::export_csproj(&project_path, self.name.clone());
 
         // /<namespaces>/*.*
         {
             let item_folder_path = {
-                let mut s = project_path.to_string();
+                let mut s = project_path.clone();
                 s.push_str("/Items");
                 s
             };
@@ -112,13 +119,13 @@ impl Mod
     fn export_mod_file(path: &str, backend_name: String)
     {
         let txt = concat_cs_code!("\
-        using Terraria.ModLoader;\n\r\
-        \n\r\
-        namespace ", backend_name.to_string(),"\n\r\
-        {\n\r\
-            public class ", backend_name.to_string()," : Mod\n\r\
-            {\n\r\
-            }\n\r\
+        using Terraria.ModLoader;\n\
+        \n\
+        namespace ", backend_name.to_string(),"\n\
+        {\n\
+            public class ", backend_name.to_string()," : Mod\n\
+            {\n\
+            }\n\
         }\
         ");
 
@@ -135,8 +142,8 @@ impl Mod
     fn export_build_txt(path: &str, display_name: String, author: String, version: String)
     {
         let txt = concat_cs_code!(
-            "displayName = ", display_name, "\n\r\
-            author = ", author, "\n\r\
+            "displayName = ", display_name, "\n\
+            author = ", author, "\n\
             version = ", version
         );
 
@@ -163,19 +170,19 @@ impl Mod
     fn export_launch_settings(path: &str)
     {
         let txt = "\
-        {\n\r\
-          \"profiles\": {\n\r\
-            \"Terraria\": {\n\r\
-              \"commandName\": \"Executable\",\n\r\
-              \"executablePath\": \"dotnet\",\n\r\
-              \"commandLineArgs\": \"$(tMLPath)\",\n\r\
-              \"workingDirectory\": \"$(tMLSteamPath)\"\n\r\
-            },\n\r\
-            \"TerrariaServer\": {\n\r\
-              \"commandName\": \"Executable\",\n\r\
-              \"executablePath\": \"dotnet\",\n\r\
-              \"commandLineArgs\": \"$(tMLServerPath)\",\n\r\
-              \"workingDirectory\": \"$(tMLSteamPath)\"\n\r\
+        {\n\
+          \"profiles\": {\n\
+            \"Terraria\": {\n\
+              \"commandName\": \"Executable\",\n\
+              \"executablePath\": \"dotnet\",\n\
+              \"commandLineArgs\": \"$(tMLPath)\",\n\
+              \"workingDirectory\": \"$(tMLSteamPath)\"\n\
+            },\n\
+            \"TerrariaServer\": {\n\
+              \"commandName\": \"Executable\",\n\
+              \"executablePath\": \"dotnet\",\n\
+              \"commandLineArgs\": \"$(tMLServerPath)\",\n\
+              \"workingDirectory\": \"$(tMLSteamPath)\"\n\
             }
           }
         }\
@@ -211,16 +218,16 @@ impl Mod
     fn export_csproj(path: &str, backend_name: String)
     {
         let txt = concat_cs_code!(
-            "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n\r\
-            <Project Sdk=\"Microsoft.NET.Sdk\">\n\r\
-              <Import Project=\"..\tModLoader.targets\" />\n\r\
-              <PropertyGroup>\n\r\
-                <AssemblyName>", backend_name, "</AssemblyName>\n\r\
-                <TargetFramework>net6.0</TargetFramework>\n\r\
-                <PlatformTarget>AnyCPU</PlatformTarget>\n\r\
-                <LangVersion>latest</LangVersion>\n\r\
-              </PropertyGroup>\n\r\
-              <ItemGroup>\n\r\
+            "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n\
+            <Project Sdk=\"Microsoft.NET.Sdk\">\n\
+              <Import Project=\"..\tModLoader.targets\" />\n\
+              <PropertyGroup>\n\
+                <AssemblyName>", backend_name, "</AssemblyName>\n\
+                <TargetFramework>net6.0</TargetFramework>\n\
+                <PlatformTarget>AnyCPU</PlatformTarget>\n\
+                <LangVersion>latest</LangVersion>\n\
+              </PropertyGroup>\n\
+              <ItemGroup>\n\
                 <PackageReference Include=\"tModLoader.CodeAssist\" Version=\"0.1.*\" />
               </ItemGroup>
             </Project>"
@@ -359,7 +366,8 @@ impl IntoCSCode for BuffId
         {
             return tid.to_string();
         }
-        todo!("Implement to_cs() for the BuffId(Modded(str))")
+
+        return self.0.modded()
     }
 }
 
@@ -382,7 +390,8 @@ impl IntoCSCode for EntityId
         {
             return tid.to_string();
         }
-        todo!("Implement to_cs() for the EntityId(Modded(str))")
+
+        return self.0.modded()
     }
 }
 
@@ -405,7 +414,8 @@ impl IntoCSCode for EntitySoundId
         {
             return tid.to_string();
         }
-        todo!("Implement to_cs() for the EntitySoundID(Modded(str))")
+
+        return self.0.modded()
     }
 }
 
@@ -426,9 +436,14 @@ impl IntoCSCode for ItemSoundId
     {
         if let Terraria(tid) = self.0
         {
-            return tid.to_string();
+            return {
+                let mut s = "SoundID.Item".to_string();
+                s.push_str(&tid.to_string());
+                s
+            }
         }
-        todo!("Implement to_cs() for the ItemSoundId(Modded(str))")
+
+        return self.0.modded()
     }
 }
 
@@ -589,11 +604,11 @@ impl IntoCSCode for DamageType
     fn into_cs(self) -> String
     {
         match self {
-            DamageType::Melee => { "item.melee = true;".to_string() }
-            DamageType::Ranged => { "item.ranged = true;".to_string() }
-            DamageType::Magic => { "item.magic = true;".to_string() }
-            DamageType::Summon => { "item.summon = true;".to_string() }
-            DamageType::Thrown => { "item.thrown = true;".to_string() }
+            DamageType::Melee => { "Item.DamageType = DamageClass.Melee;".to_string() }
+            DamageType::Ranged => { "Item.DamageType = DamageClass.Ranged;".to_string() }
+            DamageType::Magic => { "Item.DamageType = DamageClass.Magic;".to_string() }
+            DamageType::Summon => { "Item.DamageType = DamageClass.Summon;".to_string() }
+            DamageType::Thrown => { "Item.DamageType = DamageClass.Thrown;".to_string() }
         }
     }
 }
@@ -827,53 +842,65 @@ impl Item
     pub fn into_cs(self, mod_name: &str) -> String
     {
         let mut class = crate::concat_cs_code!(
-            "public class ", self.name.clone(), " : ModItem \n\r\
-            {\n\r\
-            \tpublic override void SetDefaults()\n\r\
-            \t{\n\r\
-            \t\titem.name = \"", &self.name.into_cs(), "\";\n\r\
-            \t\titem.toolTip = \"", &self.tooltip.into_cs(), "\";\n\r\
-            \n\r\
-            \t\titem.damage = ", &self.damage.into_cs(), ";\n\r\
-            \t\titem.knockBack = ", &self.knockback.into_cs(), ";\n\r\
-            \t\t", &self.damage_type.expect("Optional damage type not supported yet").into_cs() ,"\
-            \n\r\
-            \t\titem.consumable = ", &self.consumable.into_cs(), ";\n\r\
-            \t\titem.maxStack = ", &self.max_stack.into_cs(), ";\n\r\
-            \n\r\
-            \t\titem.autoReuse = ", &self.auto_reuse.into_cs(), ";\n\r\
-            \t\titem.value = ", &self.value.into_cs(), ";\n\r\
-            \t\titem.rare = ", &self.rarity.into_cs(), ";\n\r\
-            \n\r\
-            \t\titem.width = ", &self.width.into_cs(), ";\n\r\
-            \t\titem.height = ", &self.height.into_cs(), ";\n\r\
-            \n\r\
-            \t\titem.useTime = ", &self.use_time.into_cs(), ";\n\r\
-            \t\titem.useAnimation = ", &self.use_animation.into_cs(), ";\n\r\
-            \t\titem.useStyle = ", &self.use_style.into_cs(), ";\n\r\
-            \t\titem.useSound = ", &self.use_sound.into_cs(), ";\n\r\
-            \t}\n\r\
-            \n\r",
+            "\
+            using Terraria;\n\
+            using Terraria.ID;\n\
+            using Terraria.ModLoader;\n\
+            \n\
+            namespace ", mod_name, ".Items\n\
+            {\n\
+            \tpublic class ", self.name.clone(), " : ModItem \n\
+            \t{\n\
+            \t\tpublic override void SetStaticDefaults()\n\
+            \t\t{\n\
+            \t\t\t// DisplayName.SetDefault(\"", self.name.into_cs(),"\"); // By default, capitalization in classnames will add spaces to the display name. You can customize the display name here by uncommenting this line.\n\
+            \t\t\tTooltip.SetDefault(\"", self.tooltip.into_cs(),"\");\n\
+            \t\t}\n\
+            \t\n\
+            \t\tpublic override void SetDefaults()\n\
+            \t\t{\n\
+            ",//"\t\tItem.name = \"", &self.name.into_cs(), "\";\n",
+            "\t\t\tItem.damage = ", &self.damage.into_cs(), ";\n\
+            \t\t\tItem.knockBack = ", &self.knockback.into_cs(), ";\n\
+            \t\t\t", &self.damage_type.expect("Optional damage type not supported yet").into_cs() ,"\
+            \t\n\
+            \t\t\tItem.consumable = ", &self.consumable.into_cs(), ";\n\
+            \t\t\tItem.maxStack = ", &self.max_stack.into_cs(), ";\n\
+            \t\n\
+            \t\t\tItem.autoReuse = ", &self.auto_reuse.into_cs(), ";\n\
+            \t\t\tItem.value = ", &self.value.into_cs(), ";\n\
+            \t\t\tItem.rare = ", &self.rarity.into_cs(), ";\n\
+            \t\n\
+            \t\t\tItem.width = ", &self.width.into_cs(), ";\n\
+            \t\t\tItem.height = ", &self.height.into_cs(), ";\n\
+            \t\n\
+            \t\t\tItem.useTime = ", &self.use_time.into_cs(), ";\n\
+            \t\t\tItem.useAnimation = ", &self.use_animation.into_cs(), ";\n\
+            \t\t\tItem.useStyle = ", &self.use_style.into_cs(), ";\n\
+            \t\t\tItem.UseSound = ", &self.use_sound.into_cs(), ";\n\
+            \t\t}\n\
+            \n",
             {
                 if self.recipes.len() != 0 {
                     let mut s = String::new();
 
-                    s.push_str("\tpublic override void AddRecipes()\n\r\
-                    \t{\n\r");
+                    s.push_str("\t\tpublic override void AddRecipes()\n\
+                    \t\t{\n");
 
                     for recipe in self.recipes
                     {
                         s.push_str(recipe.into_cs(mod_name.to_string(), true).as_str());
                     }
 
-                    s.push_str("\t}\n\r");
+                    s.push_str("\t\t}\n");
 
                     s
                 }
                 else { "".to_string() }
                 .as_str()
             },
-            "}"
+            "\t}\n\
+            }"
         );
 
         class
@@ -884,6 +911,7 @@ impl Item
 pub struct Recipe {
     result : ItemId,
     ingredients : Vec<(ItemId, u16)>,
+    // groups: Vec<String>, // TODO : Integrate recipegroups (recipe.AddRecipeGroup(str)) (https://github.com/tModLoader/tModLoader/blob/master/ExampleMod/Items/ExampleItem.cs)
     stations : Vec<TileId>,
 }
 
@@ -893,43 +921,53 @@ impl Recipe
     {
         let mut s = String::new();
 
-        s.push_str("\t\tModRecipe recipe");
+        s.push_str("\t\t\tRecipe ");
 
-        let id = { // Unique recipe name
+        let recipe_name = { // Unique recipe name
             let mut h = DefaultHasher::new();
             self.stations.hash(&mut h);
             self.ingredients.hash(&mut h);
             let id = h.finish().to_string();
-            s.push_str(&id);
-            id
+
+            let mut recipe_name = "recipe".to_string();
+            recipe_name.push_str(&id);
+            recipe_name
         };
 
-        s.push_str(" = new ModRecipe(mod);\n\r");
+        s.push_str(&recipe_name);
+
+        s.push_str(" = CreateRecipe();\n");
 
         for (ingr, amount) in self.ingredients
         {
-            s.push_str("\t\trecipe.AddIngredient(");
+            s.push_str("\t\t\trecipe.AddIngredient(");
             s.push_str(&ingr.into_cs());
             s.push_str(", ");
             s.push_str(&amount.to_string());
-            s.push_str(")\n\r");
+            s.push_str(")\n");
         }
 
         for tile in self.stations
         {
-            s.push_str("\t\trecipe.AddTile(");
+            s.push_str(&concat_cs_code!("\t\t\t", &recipe_name, ".AddTile("));
             s.push_str(&tile.into_cs(mod_name.to_string()));
-            s.push_str(");\n\r");
+            s.push_str(");\n");
         }
 
-        s.push_str(concat_cs_code!("\t\trecipe.SetResult(",
-            if set_result_to_this { "this".to_string() } else { self.result.into_cs() }
-            , ");\n\r"
-        ).as_str());
+        s.push_str(&concat_cs_code!("\t\t\t", &recipe_name,
+            if set_result_to_this
+            {
+                ".Register();\n".to_string()
+            }
+            else
+            {
+                panic!("set_result_to_this: false ; Recipe::to_cs(self, String, false) not impelment")
+            }
+        ));
 
-        s.push_str("\t\trecipe");
-        s.push_str(&id.to_string());
-        s.push_str(".AddRecipe();\n\r");
+        /*s.push_str("\t\t");
+        s.push_str(&recipe_name.to_string());
+        s.push_str(".AddRecipe();\n");*/
 
         s
     }
@@ -938,23 +976,23 @@ impl Recipe
 #[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
 pub struct Projectile {
     id : ProjectileId,
-    // TODO
+    // TODO : Struct Projectile
 }
 
 #[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
 pub struct Tile {
     id : TileId,
-    // TODO
+    // TODO : Struct Tile
 }
 
 #[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
 pub struct Buff {
     id : BuffId,
-    // TODO
+    // TODO : Struct Buff
 }
 
 #[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
 pub struct Entity {
     id : EntityId,
-    // TODO
+    // TODO : Struct Entity
 }

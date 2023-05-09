@@ -26,7 +26,7 @@ fn test_mod_export()
 {
     let mut m = Mod::init(
         "TestMod",
-        "GeneratedMod",
+        "Generated mod",
         "Steduthu",
         "0.1",
         "Andu'falah'dor"
@@ -59,6 +59,6 @@ fn test_mod_export()
         }
     );
 
-    m.export("./mymod");
+    m.export(r"C:\Users\erwan\Documents\My Games\Terraria\tModLoader\ModSources\");
 }
 
