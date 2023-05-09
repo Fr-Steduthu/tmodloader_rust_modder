@@ -1,6 +1,6 @@
 
 pub mod tmod_types;
-pub mod terraria_defaults;
+pub mod terraria;
 
 
 

@@ -5,25 +5,6 @@ use library::tmod_types::Identifier::Terraria;
 fn main() {
     println!("Hi, I'm the development project!");
 
-    let mut it = Item::sword(
-        "Toto".to_string(),
-        "Tata".to_string(),
-        64
-    );
-
-    it.add_recipe(
-        vec![],
-        vec![
-            library::terraria_defaults::tile_ids::DIRT_TILE,
-        ]
-    );
-
-    println!("{}", it.into_cs(""))
-}
-
-#[test]
-fn test_mod_export()
-{
     let mut m = Mod::init(
         "TestMod",
         "Generated mod",
@@ -49,9 +30,11 @@ fn test_mod_export()
             );
 
             it.add_recipe(
-                vec![],
                 vec![
-                    library::terraria_defaults::tile_ids::DIRT_TILE,
+                    (library::terraria::item_ids::DirtBlock(), 1),
+                ],
+                vec![
+                    library::terraria::tile_ids::DirtTile(),
                 ]
             );
 
@@ -60,5 +43,6 @@ fn test_mod_export()
     );
 
     m.export(r"C:\Users\erwan\Documents\My Games\Terraria\tModLoader\ModSources\");
+    println!("Project has been exported");
 }
 

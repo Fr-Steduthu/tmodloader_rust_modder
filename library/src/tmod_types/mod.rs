@@ -6,7 +6,7 @@ use std::io::{ErrorKind, Write};
 use crate::concat_cs_code;
 use crate::cs::IntoCSCode;
 use crate::tmod_types::Identifier::Terraria;
-use crate::terraria_defaults::time::TICK;
+use crate::terraria::time::TICK;
 
 pub type Time = u32;
 
@@ -246,24 +246,8 @@ impl Mod
 
 #[derive(serde::Serialize, serde::Deserialize, Clone, Debug, Hash)]
 pub enum Identifier {
-    Terraria(u32),
+    Terraria(String),
     Modded(String),
-}
-
-impl Identifier {
-    pub fn terraria(self)
-    {
-        unimplemented!("Identifer::terraria(self)")
-    }
-
-    pub fn modded(self) -> String
-    {
-        match self
-        {
-            Identifier::Terraria(_) => panic!("Cannot match terraria identifier to modded identifier"),
-            Identifier::Modded(v) => v,
-        }
-    }
 }
 
 impl Display for Identifier
@@ -272,7 +256,7 @@ impl Display for Identifier
     {
         match self
         {
-            Identifier::Terraria(id) => write!(f, "{id}"),
+            Identifier::Terraria(id) |
             Identifier::Modded(id) => write!(f, "{id}"),
         }
     }
@@ -285,12 +269,7 @@ impl IntoCSCode for ItemId
 {
     fn into_cs(self) -> String
     {
-        if let Terraria(tid) = self.0
-        {
-            return tid.to_string();
-        }
-
-        return self.0.modded()
+        return self.0.to_string()
     }
 }
 
@@ -309,12 +288,7 @@ impl IntoCSCode for ProjectileId
 {
     fn into_cs(self) -> String
     {
-        if let Terraria(tid) = self.0
-        {
-            return tid.to_string();
-        }
-
-        return self.0.modded()
+        return self.0.to_string()
     }
 }
 
@@ -362,12 +336,7 @@ impl IntoCSCode for BuffId
 {
     fn into_cs(self) -> String
     {
-        if let Terraria(tid) = self.0
-        {
-            return tid.to_string();
-        }
-
-        return self.0.modded()
+        return self.0.to_string()
     }
 }
 
@@ -386,12 +355,7 @@ impl IntoCSCode for EntityId
 {
     fn into_cs(self) -> String
     {
-        if let Terraria(tid) = self.0
-        {
-            return tid.to_string();
-        }
-
-        return self.0.modded()
+        return self.0.to_string()
     }
 }
 
@@ -410,12 +374,7 @@ impl IntoCSCode for EntitySoundId
 {
     fn into_cs(self) -> String
     {
-        if let Terraria(tid) = self.0
-        {
-            return tid.to_string();
-        }
-
-        return self.0.modded()
+        return self.0.to_string()
     }
 }
 
@@ -434,16 +393,7 @@ impl IntoCSCode for ItemSoundId
 {
     fn into_cs(self) -> String
     {
-        if let Terraria(tid) = self.0
-        {
-            return {
-                let mut s = "SoundID.Item".to_string();
-                s.push_str(&tid.to_string());
-                s
-            }
-        }
-
-        return self.0.modded()
+        return self.0.to_string();
     }
 }
 
@@ -758,7 +708,7 @@ impl Item // Templates
             use_time: 0,
             use_animation: 0,
             use_style: UseStyle::Swing,
-            use_sound: crate::terraria_defaults::sound_ids::items::MELEE,
+            use_sound: crate::terraria::sound_ids::items::Melee(),
             auto_reuse: false,
             consumable: false,
             no_use_graphics: false,
@@ -841,7 +791,7 @@ impl Item
 {
     pub fn into_cs(self, mod_name: &str) -> String
     {
-        let mut class = crate::concat_cs_code!(
+        let class = crate::concat_cs_code!(
             "\
             using Terraria;\n\
             using Terraria.ID;\n\
@@ -940,11 +890,13 @@ impl Recipe
 
         for (ingr, amount) in self.ingredients
         {
-            s.push_str("\t\t\trecipe.AddIngredient(");
+            s.push_str("\t\t\t");
+            s.push_str(&recipe_name);
+            s.push_str(".AddIngredient(");
             s.push_str(&ingr.into_cs());
             s.push_str(", ");
             s.push_str(&amount.to_string());
-            s.push_str(")\n");
+            s.push_str(");\n");
         }
 
         for tile in self.stations
