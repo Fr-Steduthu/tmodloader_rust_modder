@@ -1,5 +1,6 @@
 use library::cs::IntoCSCode;
-use library::tmod_types::{DamageType, Item, ItemId, Mod};
+use library::terraria::time::irl::seconds;
+use library::tmod_types::{DamageType, Item, ItemId, Mod, Time, UseStyle};
 use library::tmod_types::Identifier::Terraria;
 
 fn main() {
@@ -29,12 +30,23 @@ fn main() {
                 DamageType::Summon
             );
 
+            it.set_style(
+                seconds(1),
+                seconds(1),
+                UseStyle::HoldOut,
+                library::terraria::sound_ids::items::Melee(),
+                false,
+                false,
+                true,
+                true,
+            );
+
             it.add_recipe(
                 vec![
                     (library::terraria::item_ids::DirtBlock(), 1),
                 ],
                 vec![
-                    library::terraria::tile_ids::DirtTile(),
+                    library::terraria::tile_ids::Workbenches(),
                 ]
             );
 

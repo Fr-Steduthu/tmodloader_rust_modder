@@ -3,10 +3,11 @@ use std::fmt::{Display, Formatter};
 use std::fs::File;
 use std::hash::{Hash, Hasher};
 use std::io::{ErrorKind, Write};
+
 use crate::concat_cs_code;
 use crate::cs::IntoCSCode;
-use crate::tmod_types::Identifier::Terraria;
 use crate::terraria::time::TICK;
+use crate::tmod_types::Identifier::Terraria;
 
 pub type Time = u32;
 

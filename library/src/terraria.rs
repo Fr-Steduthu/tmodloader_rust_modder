@@ -1,19 +1,58 @@
 
-pub mod time {
+pub mod time
+{
     use crate::tmod_types::Time;
 
     pub const TICK: Time = 1;
 
-    pub const SECOND_IRL: Time = 60;
-    pub const MINUTE_IRL: Time = SECOND_IRL * 60;
-    pub const HOUR_IRL: Time = MINUTE_IRL * 60;
+    const SECOND_IRL: Time = 60;
+    const MINUTE_IRL: Time = SECOND_IRL * 60;
+    const HOUR_IRL: Time = MINUTE_IRL * 60;
 
-    pub const SECOND_IG: Time = TICK;
-    pub const MINUTE_IG: Time = SECOND_IRL;
-    pub const HOUR_IG: Time = MINUTE_IRL;
+    const SECOND_IG: Time = TICK;
+    const MINUTE_IG: Time = SECOND_IRL;
+    const HOUR_IG: Time = MINUTE_IRL;
 
-    pub const DAYTIME: (Time, Time) = (4 * HOUR_IG + 30 * MINUTE_IG, 7 * HOUR_IG + 30 * MINUTE_IG);
-    pub const NIGHTTIME: (Time, Time) = (7 * HOUR_IG + 30 * MINUTE_IG + SECOND_IG, 4 * HOUR_IG + 30 * MINUTE_IG - SECOND_IG);
+    const DAYTIME: (Time, Time) = (4 * HOUR_IG + 30 * MINUTE_IG, 7 * HOUR_IG + 30 * MINUTE_IG);
+    const NIGHTTIME: (Time, Time) = (7 * HOUR_IG + 30 * MINUTE_IG + SECOND_IG, 4 * HOUR_IG + 30 * MINUTE_IG - SECOND_IG);
+
+    pub mod irl
+    {
+        use crate::terraria::time::{HOUR_IRL, MINUTE_IRL, SECOND_IRL};
+        use crate::tmod_types::Time;
+
+        pub fn seconds(amount: u32) -> Time
+        {
+            amount * SECOND_IRL
+        }
+        pub fn minutes(amount: u32) -> Time
+        {
+            amount * MINUTE_IRL
+        }
+        pub fn hours(amount: u32) -> Time
+        {
+            amount * HOUR_IRL
+        }
+    }
+
+    pub mod ig
+    {
+        use crate::terraria::time::{HOUR_IG, MINUTE_IG, SECOND_IG};
+        use crate::tmod_types::Time;
+
+        pub fn seconds(amount: u32) -> Time
+        {
+            amount * SECOND_IG
+        }
+        pub fn minutes(amount: u32) -> Time
+        {
+            amount * MINUTE_IG
+        }
+        pub fn hours(amount: u32) -> Time
+        {
+            amount * HOUR_IG
+        }
+    }
 }
 
 macro_rules! id
@@ -27,7 +66,7 @@ macro_rules! id
 
 pub mod sound_ids {
     pub mod items {
-        use crate::tmod_types::{ItemSoundId, Identifier::Terraria};
+        use crate::tmod_types::{Identifier::Terraria, ItemSoundId};
 
         id!(Melee, ItemSoundId, "SoundID.Item1");
         // pub const MUSHROOM : ItemSoundId = ItemSoundId(Terraria(2));
@@ -146,18 +185,49 @@ pub mod sound_ids {
 }
 
 pub mod tile_ids {
-
     use crate::tmod_types::Identifier::Terraria;
     use crate::tmod_types::TileId;
 
-    id!(DirtTile, TileId, "0");
+// Reference: https://terraria.fandom.com/wiki/Tile_IDs#cite_ref-1
+
+    id!(Dirt, TileId, "0");
+    id!(Stone, TileId, "1");
+    id!(Grass, TileId, "2");
+    id!(Flowers, TileId, "3");
+    id!(Torches, TileId, "4");
+    id!(Trees, TileId, "5");
+    id!(IronOre, TileId, "6");
+    id!(CopperOre, TileId, "7");
+    id!(GoldOre, TileId, "8");
+    id!(SilverOre, TileId, "9");
+    id!(ClosedDoors, TileId, "10");
+    id!(OpenDoors, TileId, "11");
+    id!(LifeCrystal, TileId, "12");
+    id!(Bottles, TileId, "13");
+    id!(Tables, TileId, "14");
+    id!(Chairs, TileId, "15");
+    id!(Anvils, TileId, "16");
+    id!(Furnace, TileId, "17");
+    id!(Workbenches, TileId, "18");
+    id!(Platforms, TileId, "19");
+    id!(Saplings, TileId, "20");
+    id!(Chests, TileId, "21");
+    id!(DemoniteOre, TileId, "22");
+    id!(CorruptGrass, TileId, "23");
+    id!(CorruptionPlant, TileId, "24");
+    id!(EbonStone, TileId, "25");
+    id!(DemonAltar, TileId, "26");
+    id!(Sunflower, TileId, "27");
+    id!(Pots, TileId, "28");
+    id!(Piggybank, TileId, "29");
+    id!(Wood, TileId, "30");
 }
 
 pub mod item_ids
 {
     use crate::tmod_types::
     {
-        ItemId, Identifier::Terraria
+        Identifier::Terraria, ItemId
     };
 
     id!(IronPickaxe, ItemId, "ItemID.IronPickaxe");
