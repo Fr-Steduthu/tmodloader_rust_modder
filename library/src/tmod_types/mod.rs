@@ -792,7 +792,7 @@ impl Item
 {
     pub fn into_cs(self, mod_name: &str) -> String
     {
-        let class = crate::concat_cs_code!(
+        crate::concat_cs_code!(
             "\
             using Terraria;\n\
             using Terraria.ID;\n\
@@ -852,9 +852,7 @@ impl Item
             },
             "\t}\n\
             }"
-        );
-
-        class
+        )
     }
 }
 
